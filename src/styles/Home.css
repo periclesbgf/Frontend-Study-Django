@@ -1,0 +1,22 @@
+/* Links container */
+.links-container {
+    margin-top: 20px;
+  }
+  
+  /* Estilo personalizado para os links */
+  .custom-link {
+    color: #4caf50;
+    font-size: 18px;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #333;
+    border: 2px solid #4caf50;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .custom-link:hover {
+    background-color: #4caf50;
+    color: #fff;
+  }
+  
