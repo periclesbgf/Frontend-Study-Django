@@ -10,19 +10,19 @@ const ChatPage = () => {
     setMessages([...messages, { role: 'user', content: input }]);
 
     try {
-      const response = await sendPrompt(input, 'your_code');  // No need to pass token explicitly
+      const response = await sendPrompt(input);
       setMessages([...messages, { role: 'user', content: input }, { role: 'assistant', content: response.response }]);
     } catch (err) {
       console.error("Error sending message:", err);
     }
 
-    setInput('');  // Clear the input field
+    setInput('');
   };
 
   return (
     <div>
       <h1>Chat</h1>
-      <div>
+      <div className="chat-messages">
         {messages.map((msg, index) => (
           <p key={index}><strong>{msg.role}:</strong> {msg.content}</p>
         ))}

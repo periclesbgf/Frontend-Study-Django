@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Set your backend base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+const API_PROMPT_CODE = process.env.REACT_APP_API_CODE;
 
 // Helper function to get token from localStorage
 const getAuthToken = () => {
@@ -54,21 +55,23 @@ export const loginUser = async (email, password) => {
 };
 
 // Function to send a prompt to the chatbot (Protected route)
-export const sendPrompt = async (prompt, code) => {
-  const token = getAuthToken();  // Get the token from localStorage
+export const sendPrompt = async (prompt) => {
+  const token = getAuthToken();  // Obtém o token do localStorage
   try {
     const response = await axios.post(
       `${API_BASE_URL}/prompt`,
-      { question: prompt, code: code },
+      { question: prompt, code: API_PROMPT_CODE },  // Passa a pergunta e o código
       {
         headers: {
-          Authorization: `Bearer ${token}`,  // Attach the JWT token
+          Authorization: `Bearer ${token}`,  // Anexa o JWT token
         },
       }
     );
     return response.data;
   } catch (error) {
-    handleAuthError(error);  // Handle token expiration or other auth errors
+    // Se o token expirar ou houver erro de autenticação
+    console.error('Error in sendPrompt:', error);
+    throw error;
   }
 };
 
