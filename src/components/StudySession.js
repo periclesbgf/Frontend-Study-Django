@@ -1,10 +1,12 @@
-import React from 'react';
-import ChatPage from './ChatPage';  // O ChatBot importado
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';  // Importando useParams para pegar o sessionId
+import ChatPage from './ChatPage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faChartBar, faFolder, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import '../styles/HomeStudent.css'; // Importando o CSS
+import '../styles/HomeStudent.css';
 
 const StudySession = () => {
+  const { sessionId } = useParams();  // Pegando o sessionId da URL
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -32,8 +34,8 @@ const StudySession = () => {
         </button>
       </div>
       <div className="content">
-        {/* Renderizando o chatbot */}
-        <ChatPage />
+        <h1>Study Session {sessionId}</h1>  {/* Exibindo o ID da sessão */}
+        <ChatPage sessionId={sessionId} />  {/* Passando o sessionId para o ChatPage, se necessário */}
       </div>
     </div>
   );

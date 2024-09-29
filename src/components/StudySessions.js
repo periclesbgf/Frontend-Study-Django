@@ -1,133 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
-import '../styles/StudySessions.css';  // Estilo para a exibição estilo Netflix
+import { Segment, Header, Card, Grid, Button, Icon, Modal, Form } from 'semantic-ui-react';
+import '../styles/StudySessions.css';
 
 const StudySessions = () => {
   const navigate = useNavigate();
-  const [disciplines, setDisciplines] = useState([]);  // Lista de disciplinas
+
+  // Disciplinas e sessões fictícias para visualização
+  const [disciplines, setDisciplines] = useState([
+    {
+      id: 1,
+      nome: 'Matemática',
+      sessions: [
+        { id: 101, nome: 'Estudo de Álgebra', assunto: 'Álgebra avançada' },
+        { id: 102, nome: 'Geometria', assunto: 'Figuras e formas' },
+      ],
+    },
+    {
+      id: 2,
+      nome: 'Física',
+      sessions: [
+        { id: 201, nome: 'Mecânica Clássica', assunto: 'Leis de Newton' },
+        { id: 202, nome: 'Termodinâmica', assunto: 'Transferência de calor' },
+      ],
+    },
+    {
+      id: 3,
+      nome: 'História',
+      sessions: [
+        { id: 301, nome: 'História Antiga', assunto: 'Civilizações egípcias' },
+        { id: 302, nome: 'História Moderna', assunto: 'Revolução Industrial' },
+      ],
+    },
+  ]);
+
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);  // Disciplina selecionada
-  const [newDisciplineName, setNewDisciplineName] = useState('');  // Nome da nova disciplina
   const [newSessionName, setNewSessionName] = useState('');  // Nome da nova sessão
   const [newSessionSubject, setNewSessionSubject] = useState('');  // Assunto da nova sessão
+  const [openSessionModal, setOpenSessionModal] = useState(false);
+  const [openDisciplineModal, setOpenDisciplineModal] = useState(false);
+  const [newDisciplineName, setNewDisciplineName] = useState('');  // Nome da nova disciplina
 
-  useEffect(() => {
-    // Buscando disciplinas e sessões do backend
-    const fetchDisciplines = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/disciplines`);  // Substitua pela rota real
-        setDisciplines(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar disciplinas:', error);
-      }
+  // Função para criar uma nova disciplina
+  const createNewDiscipline = () => {
+    const newDiscipline = {
+      id: disciplines.length + 1,
+      nome: newDisciplineName,
+      sessions: [],
     };
-
-    fetchDisciplines();
-  }, []);
-
-  // Função para criar nova disciplina
-  const createNewDiscipline = async () => {
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/create_discipline`, {
-        nome: newDisciplineName,
-      });
-
-      setDisciplines([...disciplines, response.data]);  // Atualizando a lista de disciplinas
-      setNewDisciplineName('');  // Limpando o campo de criação
-    } catch (error) {
-      console.error('Erro ao criar disciplina:', error);
-    }
+    setDisciplines([...disciplines, newDiscipline]);  // Adiciona a nova disciplina
+    setNewDisciplineName('');
+    setOpenDisciplineModal(false);  // Fecha o modal após a criação
   };
 
   // Função para criar nova sessão dentro de uma disciplina
-  const createNewSession = async (disciplineId) => {
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/create_study_session`, {
-        nome: newSessionName,
-        assunto: newSessionSubject,
-        disciplina_id: disciplineId,
-      });
+  const createNewSession = (disciplineId) => {
+    const newSession = {
+      id: Math.floor(Math.random() * 1000),  // Gera um ID aleatório para a nova sessão
+      nome: newSessionName,
+      assunto: newSessionSubject,
+    };
 
-      // Atualizando a disciplina com a nova sessão
-      const updatedDisciplines = disciplines.map(discipline =>
-        discipline.id === disciplineId
-          ? { ...discipline, sessions: [...discipline.sessions, response.data] }
-          : discipline
-      );
+    // Atualiza a disciplina específica com a nova sessão
+    const updatedDisciplines = disciplines.map(discipline =>
+      discipline.id === disciplineId
+        ? { ...discipline, sessions: [...discipline.sessions, newSession] }
+        : discipline
+    );
 
-      setDisciplines(updatedDisciplines);
-      setNewSessionName('');
-      setNewSessionSubject('');
-    } catch (error) {
-      console.error('Erro ao criar nova sessão:', error);
-    }
+    setDisciplines(updatedDisciplines);
+    setNewSessionName('');
+    setNewSessionSubject('');
+    setSelectedDiscipline(null);
+    setOpenSessionModal(false);  // Fecha o modal após a criação
+  };
+
+  // Função para redirecionar para a página de StudySession
+  const handleSessionClick = (sessionId) => {
+    navigate(`/study-session/${sessionId}`);
   };
 
   return (
-    <div className="study-sessions-container">
-      <h1>Study Sessions por Disciplina</h1>
+    <Segment className="study-sessions-container">
+      <Header as="h1" textAlign="center">Sessões de Estudo por Disciplina</Header>
 
-      <div className="discipline-list">
-        {disciplines.map((discipline) => (
-          <div key={discipline.id} className="discipline-section">
-            <h2>{discipline.nome}</h2>
-
-            <div className="sessions-grid">
-              {/* Renderizando as sessões de estudo para cada disciplina */}
-              {discipline.sessions.map((session, index) => (
-                <div key={index} className="session-card" onClick={() => navigate(`/session/${session.id}`)}>
-                  <h3>{session.nome}</h3>
-                  <p>{session.assunto}</p>
-                </div>
-              ))}
-
-              {/* Botão para adicionar nova sessão dentro da disciplina */}
-              <div className="session-card new-session" onClick={() => setSelectedDiscipline(discipline.id)}>
-                <FontAwesomeIcon icon={faPlus} size="3x" />
-                <p>Nova Sessão</p>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="discipline-actions">
+        <Button color="green" onClick={() => setOpenDisciplineModal(true)}>
+          <Icon name="plus" /> Nova Disciplina
+        </Button>
       </div>
 
-      {/* Formulário para criar nova sessão de estudo */}
-      {selectedDiscipline && (
-        <div className="create-session-form">
-          <h3>Criar Nova Sessão</h3>
-          <input 
-            type="text" 
-            placeholder="Nome da Sessão" 
-            value={newSessionName}
-            onChange={(e) => setNewSessionName(e.target.value)}
-          />
-          <input 
-            type="text" 
-            placeholder="Assunto" 
-            value={newSessionSubject}
-            onChange={(e) => setNewSessionSubject(e.target.value)}
-          />
-          <button onClick={() => createNewSession(selectedDiscipline)}>Criar Sessão</button>
-          <button className="close-modal" onClick={() => setSelectedDiscipline(null)}>
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </div>
-      )}
+      {disciplines.map((discipline) => (
+        <Segment key={discipline.id} className="discipline-section">
+          <Header as="h2" className="discipline-header">{discipline.nome}</Header>
 
-      {/* Formulário para criar nova disciplina */}
-      <div className="create-discipline-form">
-        <h3>Criar Nova Disciplina</h3>
-        <input 
-          type="text" 
-          placeholder="Nome da Disciplina" 
-          value={newDisciplineName}
-          onChange={(e) => setNewDisciplineName(e.target.value)}
-        />
-        <button onClick={createNewDiscipline}>Criar Disciplina</button>
-      </div>
-    </div>
+          <Grid className="sessions-grid" doubling columns={3}>
+            {/* Renderizando as sessões de estudo como cards para cada disciplina */}
+            {discipline.sessions.map((session, index) => (
+              <Grid.Column key={index}>
+                <Card className="session-card" onClick={() => handleSessionClick(session.id)}>
+                  <Card.Content>
+                    <Card.Header>{session.nome}</Card.Header>
+                    <Card.Meta>{session.assunto}</Card.Meta>
+                  </Card.Content>
+                </Card>
+              </Grid.Column>
+            ))}
+
+            {/* Botão para adicionar nova sessão dentro da disciplina */}
+            <Grid.Column>
+              <Card className="new-session-card" onClick={() => {
+                setSelectedDiscipline(discipline.id);
+                setOpenSessionModal(true);
+              }}>
+                <Card.Content textAlign="center">
+                  <Icon name="plus" size="huge" />
+                  <Card.Description>Nova Sessão</Card.Description>
+                </Card.Content>
+              </Card>
+            </Grid.Column>
+          </Grid>
+        </Segment>
+      ))}
+
+      {/* Modal para criar nova sessão de estudo */}
+      <Modal
+        open={openSessionModal}
+        onClose={() => setOpenSessionModal(false)}
+        size="small"
+      >
+        <Header icon="book" content="Criar Nova Sessão" />
+        <Modal.Content>
+          <Form>
+            <Form.Input
+              label="Nome da Sessão"
+              placeholder="Nome da Sessão"
+              value={newSessionName}
+              onChange={(e) => setNewSessionName(e.target.value)}
+            />
+            <Form.Input
+              label="Assunto"
+              placeholder="Assunto"
+              value={newSessionSubject}
+              onChange={(e) => setNewSessionSubject(e.target.value)}
+            />
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button color="red" onClick={() => setOpenSessionModal(false)}>
+            <Icon name="remove" /> Cancelar
+          </Button>
+          <Button color="green" onClick={() => createNewSession(selectedDiscipline)}>
+            <Icon name="checkmark" /> Criar Sessão
+          </Button>
+        </Modal.Actions>
+      </Modal>
+
+      {/* Modal para criar nova disciplina */}
+      <Modal
+        open={openDisciplineModal}
+        onClose={() => setOpenDisciplineModal(false)}
+        size="small"
+      >
+        <Header icon="book" content="Criar Nova Disciplina" />
+        <Modal.Content>
+          <Form>
+            <Form.Input
+              label="Nome da Disciplina"
+              placeholder="Nome da Disciplina"
+              value={newDisciplineName}
+              onChange={(e) => setNewDisciplineName(e.target.value)}
+            />
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button color="red" onClick={() => setOpenDisciplineModal(false)}>
+            <Icon name="remove" /> Cancelar
+          </Button>
+          <Button color="green" onClick={createNewDiscipline}>
+            <Icon name="checkmark" /> Criar Disciplina
+          </Button>
+        </Modal.Actions>
+      </Modal>
+    </Segment>
   );
 };
 

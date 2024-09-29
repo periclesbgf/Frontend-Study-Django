@@ -5,7 +5,7 @@ import RegisterStudent from './components/RegisterStudent';
 import Login from './components/Login';
 import HomeStudent from './components/HomeStudent';
 import StudySessions from './components/StudySessions';
-import ChatPage from './components/ChatPage';
+import StudySession from './components/StudySession';  // Certifique-se de importar o componente correto
 import PrivateRoute from './components/PrivateRoute';
 
 const AppRoutes = () => (
@@ -16,7 +16,7 @@ const AppRoutes = () => (
       <Route path="/login" element={<Login />} />
       <Route path="/home-student" element={<PrivateRoute><HomeStudent /></PrivateRoute>} />
       <Route path="/sessions" element={<PrivateRoute><StudySessions /></PrivateRoute>} />
-      <Route path="/session/:sessionName" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+      <Route path="/study-session/:sessionId" element={<PrivateRoute><StudySession /></PrivateRoute>} />
     </Routes>
   </Router>
 );
