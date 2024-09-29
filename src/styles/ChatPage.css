@@ -1,0 +1,117 @@
+/* Estilo global da página de chat */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ocupar a altura total da janela */
+    background-color: #333;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  .chat-header {
+    text-align: center;
+    color: #fff;
+    padding: 15px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    border-bottom: 1px solid #444;
+  }
+  
+  /* Área de mensagens */
+  .chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #444;
+    border: 3px solid #0084ff; /* Aumentando a largura da borda */
+    border-radius: 10px;
+    box-sizing: border-box; /* Garantir que o padding seja incluído no tamanho */
+  }
+  
+  /* Estilos para mensagens */
+  .chat-message {
+    display: flex;
+    margin-bottom: 10px;
+    padding: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-size: 16px;
+    line-height: 1.4;
+    border-radius: 10px;
+    color: #fff;
+  }
+  
+  .chat-message.user {
+    background-color: #0084ff;
+    align-self: flex-end;
+  }
+  
+  .chat-message.assistant {
+    background-color: #e0e0e0;
+    color: #000;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+  }
+  
+  .MuiAvatar-root {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px; /* Espaço entre o avatar e a mensagem */
+  }
+  
+  /* Campo de entrada de mensagem */
+  .chat-input-container {
+    display: flex;
+    padding: 10px;
+    background-color: #444;
+    border-top: 1px solid #555;
+    box-sizing: border-box;
+  }
+  
+  .chat-input {
+    flex-grow: 1;
+    background-color: #dadada;
+    color: #000;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+  }
+  
+  .chat-input::placeholder {
+    color: #000;
+  }
+  
+  .chat-send-button {
+    background-color: #0084ff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  
+  .chat-send-button:hover {
+    background-color: #005fa8;
+  }
+  
+  /* Estilo para a barra de rolagem da área de mensagens */
+  .chat-messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .chat-messages::-webkit-scrollbar-track {
+    background-color: #444;
+  }
+  
+  .chat-messages::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+  }
+  
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+  

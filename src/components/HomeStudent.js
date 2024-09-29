@@ -80,7 +80,7 @@ const HomeStudent = () => {
               tileContent={renderEventMarker}  // Marca os dias com eventos no calendário
               className="custom-calendar"
             />
-            
+
             {/* Exibe o formulário para adicionar eventos se não houver eventos no dia */}
             {showEventForm && (
               <div className="event-form">

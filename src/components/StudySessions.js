@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Segment, Header, Card, Grid, Button, Icon, Modal, Form } from 'semantic-ui-react';
+import {
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
+} from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import '../styles/StudySessions.css';
 
 const StudySessions = () => {
@@ -81,108 +95,112 @@ const StudySessions = () => {
   };
 
   return (
-    <Segment className="study-sessions-container">
-      <Header as="h1" textAlign="center">Sessões de Estudo por Disciplina</Header>
+    <div className="study-sessions-container">
+      <Typography variant="h3" align="center" gutterBottom>
+        Sessões de Estudo por Disciplina
+      </Typography>
 
-      <div className="discipline-actions">
-        <Button color="green" onClick={() => setOpenDisciplineModal(true)}>
-          <Icon name="plus" /> Nova Disciplina
+      <div className="discipline-actions" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenDisciplineModal(true)}
+        >
+          Nova Disciplina
         </Button>
       </div>
 
       {disciplines.map((discipline) => (
-        <Segment key={discipline.id} className="discipline-section">
-          <Header as="h2" className="discipline-header">{discipline.nome}</Header>
+        <div key={discipline.id} className="discipline-section" style={{ marginBottom: '40px' }}>
+          <Typography variant="h5" gutterBottom>
+            {discipline.nome}
+          </Typography>
 
-          <Grid className="sessions-grid" doubling columns={3}>
-            {/* Renderizando as sessões de estudo como cards para cada disciplina */}
+          <Grid container spacing={3}>
             {discipline.sessions.map((session, index) => (
-              <Grid.Column key={index}>
-                <Card className="session-card" onClick={() => handleSessionClick(session.id)}>
-                  <Card.Content>
-                    <Card.Header>{session.nome}</Card.Header>
-                    <Card.Meta>{session.assunto}</Card.Meta>
-                  </Card.Content>
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card onClick={() => handleSessionClick(session.id)}>
+                  <CardContent>
+                    <Typography variant="h6">{session.nome}</Typography>
+                    <Typography color="textSecondary">{session.assunto}</Typography>
+                  </CardContent>
                 </Card>
-              </Grid.Column>
+              </Grid>
             ))}
 
-            {/* Botão para adicionar nova sessão dentro da disciplina */}
-            <Grid.Column>
-              <Card className="new-session-card" onClick={() => {
-                setSelectedDiscipline(discipline.id);
-                setOpenSessionModal(true);
-              }}>
-                <Card.Content textAlign="center">
-                  <Icon name="plus" size="huge" />
-                  <Card.Description>Nova Sessão</Card.Description>
-                </Card.Content>
+            {/* Botão para adicionar nova sessão */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Card
+                onClick={() => {
+                  setSelectedDiscipline(discipline.id);
+                  setOpenSessionModal(true);
+                }}
+                style={{ backgroundColor: '#eee', cursor: 'pointer', textAlign: 'center' }}
+              >
+                <CardContent>
+                  <IconButton size="large">
+                    <AddIcon fontSize="large" />
+                  </IconButton>
+                  <Typography variant="body2">Nova Sessão</Typography>
+                </CardContent>
               </Card>
-            </Grid.Column>
+            </Grid>
           </Grid>
-        </Segment>
+        </div>
       ))}
 
       {/* Modal para criar nova sessão de estudo */}
-      <Modal
-        open={openSessionModal}
-        onClose={() => setOpenSessionModal(false)}
-        size="small"
-      >
-        <Header icon="book" content="Criar Nova Sessão" />
-        <Modal.Content>
-          <Form>
-            <Form.Input
-              label="Nome da Sessão"
-              placeholder="Nome da Sessão"
-              value={newSessionName}
-              onChange={(e) => setNewSessionName(e.target.value)}
-            />
-            <Form.Input
-              label="Assunto"
-              placeholder="Assunto"
-              value={newSessionSubject}
-              onChange={(e) => setNewSessionSubject(e.target.value)}
-            />
-          </Form>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button color="red" onClick={() => setOpenSessionModal(false)}>
-            <Icon name="remove" /> Cancelar
+      <Dialog open={openSessionModal} onClose={() => setOpenSessionModal(false)}>
+        <DialogTitle>Criar Nova Sessão</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nome da Sessão"
+            fullWidth
+            margin="normal"
+            value={newSessionName}
+            onChange={(e) => setNewSessionName(e.target.value)}
+          />
+          <TextField
+            label="Assunto"
+            fullWidth
+            margin="normal"
+            value={newSessionSubject}
+            onChange={(e) => setNewSessionSubject(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenSessionModal(false)} color="secondary">
+            Cancelar
           </Button>
-          <Button color="green" onClick={() => createNewSession(selectedDiscipline)}>
-            <Icon name="checkmark" /> Criar Sessão
+          <Button onClick={() => createNewSession(selectedDiscipline)} color="primary">
+            Criar
           </Button>
-        </Modal.Actions>
-      </Modal>
+        </DialogActions>
+      </Dialog>
 
       {/* Modal para criar nova disciplina */}
-      <Modal
-        open={openDisciplineModal}
-        onClose={() => setOpenDisciplineModal(false)}
-        size="small"
-      >
-        <Header icon="book" content="Criar Nova Disciplina" />
-        <Modal.Content>
-          <Form>
-            <Form.Input
-              label="Nome da Disciplina"
-              placeholder="Nome da Disciplina"
-              value={newDisciplineName}
-              onChange={(e) => setNewDisciplineName(e.target.value)}
-            />
-          </Form>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button color="red" onClick={() => setOpenDisciplineModal(false)}>
-            <Icon name="remove" /> Cancelar
+      <Dialog open={openDisciplineModal} onClose={() => setOpenDisciplineModal(false)}>
+        <DialogTitle>Criar Nova Disciplina</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nome da Disciplina"
+            fullWidth
+            margin="normal"
+            value={newDisciplineName}
+            onChange={(e) => setNewDisciplineName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDisciplineModal(false)} color="secondary">
+            Cancelar
           </Button>
-          <Button color="green" onClick={createNewDiscipline}>
-            <Icon name="checkmark" /> Criar Disciplina
+          <Button onClick={createNewDiscipline} color="primary">
+            Criar
           </Button>
-        </Modal.Actions>
-      </Modal>
-    </Segment>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 
