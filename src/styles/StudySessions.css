@@ -1,7 +1,13 @@
 .study-sessions-container {
+  display: flex;
+  height: 100vh; /* Ocupar a altura total da tela */
+  overflow: hidden; /* Evitar rolagem na página principal */
+}
+
+.study-sessions-content {
+  flex-grow: 1;
+  overflow-y: auto; /* Adicionar a barra de rolagem na área de conteúdo */
   padding: 20px;
-  background-color: #333;
-  color: #fff;
 }
 
 .discipline-actions {
@@ -10,67 +16,56 @@
 }
 
 .discipline-section {
-  margin-top: 30px;
   background-color: #444;
   border-radius: 8px;
   padding: 20px;
-  width: 100%;  /* Faz a seção de disciplina ocupar 100% da largura */
-  box-sizing: border-box;  /* Inclui o padding no cálculo de largura */
+  margin-bottom: 20px;
 }
 
-.discipline-header {
-  color: #fff;
-  text-align: left;  /* Alinha o título da disciplina à esquerda */
+.discipline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .sessions-grid {
-  margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;  /* Espaçamento entre os cards */
+  gap: 20px;
 }
 
 .session-card {
-  background-color: #555 !important;
-  color: #fff !important;
+  background-color: #555;
+  color: #fff;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: calc(33.333% - 20px);  /* 3 cards por linha, ajustando com o gap */
+  width: calc(33.333% - 20px);
   min-height: 150px;
-  border-radius: 8px !important;
-}
-
-.session-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
 }
 
 .new-session-card {
-  background-color: #666 !important;
-  color: #fff !important;
+  background-color: #666;
+  color: #fff;
   text-align: center;
-  width: calc(33.333% - 20px);  /* Mesmo tamanho dos outros cards */
+  width: calc(33.333% - 20px);
   min-height: 150px;
-  border-radius: 8px !important;
+  border-radius: 8px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-.new-session-card:hover {
-  background-color: #777 !important;
+.new-session-card:hover,
+.session-card:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.new-session-card .card-description {
-  margin-top: 10px;
 }
 
 .modal-content {
   background-color: #444;
 }
 
-button {
-  cursor: pointer;
+.add_session_text {
+  color: #182b00;
+  font-size: 1.5rem;
 }

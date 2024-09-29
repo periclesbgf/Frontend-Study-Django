@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Button, TextField, Typography, Avatar, ListItemAvatar, ListItem } from '@mui/material'; 
 import SendIcon from '@mui/icons-material/Send';
 import { sendPrompt } from '../services/api';
+import Sidebar from './Sidebar';  // Importando o componente Sidebar
 import '../styles/ChatPage.css'; // Importando o CSS
 
 // Importando a imagem do robô
@@ -49,63 +50,68 @@ const ChatPage = ({ sessionId }) => {
   };
 
   return (
-    <Box className="chat-container">
-      <Typography variant="h5" className="chat-header">
-        Chat for Session {sessionId}
-      </Typography>
+    <div className="home-student">
+      {/* Incluindo o Sidebar */}
+      <Sidebar />
 
-      <Box className="chat-messages">
-        {messages.map((msg, index) => (
-          <ListItem 
-            key={index} 
-            className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
-            sx={{ alignItems: 'flex-start' }}
-          >
-            {msg.role === 'assistant' && (
-              <ListItemAvatar>
-                <Avatar src={BotImage} alt="Assistant Bot" />
-              </ListItemAvatar>
-            )}
-            <Box
-              sx={{
-                backgroundColor: msg.role === 'user' ? '#0084ff' : '#e0e0e0',
-                color: msg.role === 'user' ? '#fff' : '#000',
-                padding: '10px 15px',
-                borderRadius: '10px',
-                maxWidth: '70%',
-                wordWrap: 'break-word',
-                fontSize: '16px',
-                marginLeft: msg.role === 'user' ? 'auto' : '10px',
-              }}
+      <Box className="chat-container">
+        <Typography variant="h5" className="chat-header">
+          Chat for Session {sessionId}
+        </Typography>
+
+        <Box className="chat-messages">
+          {messages.map((msg, index) => (
+            <ListItem 
+              key={index} 
+              className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
+              sx={{ alignItems: 'flex-start' }}
             >
-              {msg.content}
-            </Box>
-          </ListItem>
-        ))}
-        <div ref={messagesEndRef} />
-      </Box>
+              {msg.role === 'assistant' && (
+                <ListItemAvatar>
+                  <Avatar src={BotImage} alt="Assistant Bot" />
+                </ListItemAvatar>
+              )}
+              <Box
+                sx={{
+                  backgroundColor: msg.role === 'user' ? '#0084ff' : '#e0e0e0',
+                  color: msg.role === 'user' ? '#fff' : '#000',
+                  padding: '10px 15px',
+                  borderRadius: '10px',
+                  maxWidth: '70%',
+                  wordWrap: 'break-word',
+                  fontSize: '16px',
+                  marginLeft: msg.role === 'user' ? 'auto' : '10px',
+                }}
+              >
+                {msg.content}
+              </Box>
+            </ListItem>
+          ))}
+          <div ref={messagesEndRef} />
+        </Box>
 
-      <Box className="chat-input-container">
-        <TextField
-          variant="outlined"
-          placeholder="Type a message..."
-          fullWidth
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="chat-input"
-        />
-        <Button
-          type="button"
-          variant="contained"
-          color="primary"
-          className="chat-send-button"
-          onClick={handleSendMessage}
-        >
-          <SendIcon />
-        </Button>
+        <Box className="chat-input-container">
+          <TextField
+            variant="outlined"
+            placeholder="Type a message..."
+            fullWidth
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="chat-input"
+          />
+          <Button
+            type="button"
+            variant="contained"
+            color="primary"
+            className="chat-send-button"
+            onClick={handleSendMessage}
+          >
+            <SendIcon />
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </div>
   );
 };
 
