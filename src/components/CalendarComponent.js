@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';  // Usando moment.js
+import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Modal, Box, TextField, Button } from '@mui/material';
+import '../styles/CalendarComponent.css';  // Vamos utilizar uma folha de estilos separada
 
 // Configurando o localizador com moment.js
 const localizer = momentLocalizer(moment);
@@ -48,21 +49,23 @@ const CalendarComponent = () => {
   return (
     <div>
       <h2 style={{ textAlign: 'center', color: '#fff' }}>Calendário de Estudo</h2>
-      <Calendar
-        selectable
-        localizer={localizer}
-        events={events}
-        defaultView="month"
-        views={['month', 'week', 'day', 'agenda']}  // Adicionando visualizações
-        step={30}  // Configura os intervalos de tempo (30 minutos)
-        timeslots={2}  // Mostra dois blocos de 30 minutos por hora
-        defaultDate={new Date()}  // Data padrão de visualização
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 600, margin: '50px', backgroundColor: '#fff', borderRadius: '8px' }}
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={(event) => alert(event.title)}  // Exibe o nome do evento ao clicar
-      />
+      <div className="calendar-container"> {/* Aplicando classe de estilo */}
+        <Calendar
+          selectable
+          localizer={localizer}
+          events={events}
+          defaultView="month"
+          views={['month', 'week', 'day', 'agenda']}  // Adicionando visualizações
+          step={30}  // Configura os intervalos de tempo (30 minutos)
+          timeslots={2}  // Mostra dois blocos de 30 minutos por hora
+          defaultDate={new Date()}  // Data padrão de visualização
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 600 }}
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={(event) => alert(event.title)}  // Exibe o nome do evento ao clicar
+        />
+      </div>
 
       {/* Modal para adicionar evento */}
       <Modal open={modalOpen} onClose={handleCloseModal}>

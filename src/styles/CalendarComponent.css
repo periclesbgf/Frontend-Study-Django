@@ -1,45 +1,44 @@
-/* Estilos para o calendário */
-.content {
-    padding: 20px;
-    width: 100%;
-}
-
-.react-big-calendar {
-    font-family: 'Roboto', sans-serif;
-    max-width: 1000px; /* Defina o tamanho máximo do calendário */
+.calendar-container {
+    max-width: 1100px;
     margin: 0 auto;
-    background-color: #fff; /* Fundo do calendário */
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #1e1e1e; /* Fundo escuro */
+    padding: 20px;
+    border-radius: 10px;
+    color: #fff; /* Cor do texto para contraste */
 }
 
-/* Estilos para os eventos no calendário */
+/* Estilo para os dias e eventos */
+.rbc-month-view, .rbc-time-view {
+    background-color: #282828; /* Cor de fundo da tabela do calendário */
+}
+
 .rbc-event {
-    background-color: #007bff !important;
-    color: white !important;
+    background-color: #3b82f6; /* Cor de destaque para eventos */
+    color: #fff;
     border-radius: 4px;
-    padding: 5px;
+    padding: 4px;
+    font-size: 0.9rem;
 }
 
 .rbc-event:hover {
-    background-color: #0056b3 !important;
+    background-color: #2563eb;
 }
 
-/* Estilos para a barra de navegação do calendário */
+/* Estilo das linhas do calendário */
+.rbc-row-segment, .rbc-time-slot {
+    border-color: #444; /* Cor das linhas que separam os dias */
+}
+
 .rbc-toolbar {
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
+    background-color: #1e1e1e; /* Fundo da barra de navegação */
+    border-bottom: 1px solid #444;
 }
 
 .rbc-toolbar button {
-    color: white;
     background-color: #444;
+    color: #fff;
     border: none;
-    padding: 10px;
-    margin: 5px;
-    cursor: pointer;
+    padding: 5px 10px;
     border-radius: 4px;
 }
 
@@ -47,28 +46,35 @@
     background-color: #555;
 }
 
-/* Modal styling */
-.modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.rbc-toolbar-label {
+    font-size: 1.4rem;
+    color: #fff;
 }
 
-.button {
-    margin: 20px 0;
-    background-color: #007bff;
-    color: white;
+/* Estilo do dia atual */
+.rbc-today {
+    background-color: #333;
+}
+
+.rbc-day-bg {
+    background-color: #1e1e1e;
+}
+
+.rbc-time-header {
+    border-color: #444;
+}
+
+/* Estilo do header do calendário */
+.rbc-header {
+    background-color: #333;
+    color: #fff;
     border: none;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
-.button:hover {
-    background-color: #0056b3;
+.rbc-header:hover {
+    background-color: #444;
+}
+
+.rbc-off-range-bg {
+    background-color: #222; /* Cor para dias que não pertencem ao mês atual */
 }
