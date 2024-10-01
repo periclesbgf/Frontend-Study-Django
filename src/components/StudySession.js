@@ -1,23 +1,26 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';  
+// src/components/StudySession.js
+
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import ChatPage from './ChatPage';
-import Sidebar from './Sidebar';  // Certifique-se de que o Sidebar está sendo importado corretamente
-import '../styles/HomeStudent.css';
+import Sidebar from './Sidebar'; // Certifique-se de que o Sidebar está importando o onToggle
+import '../styles/StudySession.css';
 
 const StudySession = () => {
   const { sessionId } = useParams();
-  const navigate = useNavigate();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const handleNavigation = (page) => {
-    navigate(`/${page}`);
+  const handleSidebarToggle = (collapsed) => {
+    setIsSidebarCollapsed(collapsed);
   };
 
   return (
-    <div className="home-student">
-      <Sidebar />
-      <div className="content">
-        <h1>Study Session {sessionId}</h1>
-        <ChatPage sessionId={sessionId} />
+    <div className={`study-session-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <Sidebar onToggle={handleSidebarToggle} />
+      <div className="study-session-content">
+        <div className="chat-wrapper">
+          <ChatPage sessionId={sessionId} />
+        </div>
       </div>
     </div>
   );

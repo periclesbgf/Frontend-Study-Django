@@ -1,4 +1,5 @@
-/* Sidebar.css */
+/* src/styles/Sidebar.css */
+
 .sidebar {
   width: 200px;
   background-color: #444;
@@ -10,10 +11,12 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease; /* Suave transição ao colapsar/expandir */
+  overflow: hidden;
+  z-index: 1000;
 }
 
-.collapsed {
+.sidebar.collapsed {
   width: 80px;
 }
 
@@ -41,6 +44,7 @@
   display: flex;
   align-items: center;
   transition: background 0.3s ease;
+  width: 100%;
 }
 
 .sidebar button:hover {
@@ -51,6 +55,10 @@
   margin-right: 10px;
 }
 
+.sidebar.collapsed button .icon {
+  margin: 0 auto;
+}
+
 .sidebar button.logout-icon {
   margin-left: auto;
 }
@@ -58,4 +66,10 @@
 .sidebar h3 {
   color: #fff;
   margin-bottom: 20px;
+}
+
+.sidebar hr {
+  border: none;
+  border-top: 1px solid #555;
+  margin: 20px 0;
 }

@@ -1,25 +1,21 @@
 // src/components/Sidebar.js
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faChartBar, faFolder, faSignOutAlt, faBriefcase } from '@fortawesome/free-solid-svg-icons';
-import '../styles/Sidebar.css';  // Certifique-se de adicionar estilos adequados no CSS
+import '../styles/Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ onToggle }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    navigate('/login');
-  };
-
-  const handleNavigation = (path) => {
-    navigate(path);
+    const newCollapsedState = !isCollapsed;
+    setIsCollapsed(newCollapsedState);
+    if (onToggle) {
+      onToggle(newCollapsedState); // Notifica o estado colapsado
+    }
   };
 
   return (
@@ -28,24 +24,24 @@ const Sidebar = () => {
         {isCollapsed ? '>' : '<'}
       </button>
       {!isCollapsed && <h3>Menu</h3>}
-      <button onClick={() => handleNavigation('/home-student')}>
+      <button onClick={() => navigate('/home-student')}>
         <FontAwesomeIcon icon={faHome} className="icon" />
         {!isCollapsed && 'Home'}
       </button>
-      <button onClick={() => handleNavigation('/dashboard')}>
+      <button onClick={() => navigate('/dashboard')}>
         <FontAwesomeIcon icon={faChartBar} className="icon" />
         {!isCollapsed && 'Dashboard'}
       </button>
-      <button onClick={() => handleNavigation('/study_sessions')}>
+      <button onClick={() => navigate('/study_sessions')}>
         <FontAwesomeIcon icon={faFolder} className="icon" />
         {!isCollapsed && 'Study Sessions'}
       </button>
-      <button onClick={() => handleNavigation('/workspace')}>
+      <button onClick={() => navigate('/workspace')}>
         <FontAwesomeIcon icon={faBriefcase} className="icon" />
         {!isCollapsed && 'Workspace'}
       </button>
       <hr />
-      <button onClick={handleLogout}>
+      <button onClick={() => navigate('/login')}>
         <FontAwesomeIcon icon={faSignOutAlt} className="logout-icon" />
         {!isCollapsed && 'Logout'}
       </button>

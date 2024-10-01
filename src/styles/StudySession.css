@@ -1,0 +1,37 @@
+/* StudySession.css */
+
+/* Container principal que envolve o layout de toda a página */
+.study-session-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #333;
+    width: 100%;
+  }
+  
+  /* Quando a sidebar estiver colapsada, ajusta o layout */
+  .sidebar-collapsed .study-session-content {
+    margin-left: 80px; /* Largura reduzida da sidebar colapsada */
+  }
+  
+  /* Conteúdo da página de sessão de estudo */
+  .study-session-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    margin-left: 200px; /* Largura da sidebar */
+    box-sizing: border-box;
+    height: 100vh;
+    overflow: hidden; /* Previne que o conteúdo role */
+  }
+  
+  /* Wrapper para o chat para garantir que ele ocupe todo o espaço disponível */
+  .chat-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Permite rolagem interna no componente de mensagens do chat */
+  }
+  

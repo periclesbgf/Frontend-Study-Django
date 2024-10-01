@@ -1,18 +1,62 @@
-.study-sessions-container {
-  display: flex;
-  height: 100vh; /* Ocupar a altura total da tela */
-  overflow: hidden; /* Evitar rolagem na página principal */
+/* StudySessions.css */
+
+/* Remover a rolagem do body */
+body {
+  overflow: hidden;
 }
 
-.study-sessions-content {
-  flex-grow: 1;
-  overflow-y: auto; /* Adicionar a barra de rolagem na área de conteúdo */
-  padding: 20px;
-}
-
-.discipline-actions {
+/* Estilo do header da página */
+.study-sessions-header {
+  background-color: #333;
+  color: white;
+  padding: 15px;
   text-align: center;
-  margin-bottom: 20px;
+  position: fixed; /* Manter fixo no topo */
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #444;
+}
+
+/* Ajustar o conteúdo da página */
+.study-sessions-content {
+  padding: 20px;
+  margin-top: 80px; /* Para compensar o header fixo */
+  overflow-y: scroll; /* Habilitar rolagem apenas aqui */
+  height: calc(100vh - 80px); /* Limitar a altura à altura da tela menos o header */
+  padding-left: 250px; /* Espaço para a sidebar */
+  scrollbar-width: thin; /* Deixa a barra de rolagem mais fina */
+  scrollbar-color: #888 #333; /* Customiza as cores da barra de rolagem */
+}
+
+/* Ajuste quando a sidebar estiver colapsada */
+.sidebar-collapsed .study-sessions-content {
+  padding-left: 80px;
+}
+
+/* Customização da barra de rolagem para Webkit browsers */
+.study-sessions-content::-webkit-scrollbar {
+  width: 8px; /* Largura da barra de rolagem */
+}
+
+.study-sessions-content::-webkit-scrollbar-track {
+  background: #333; /* Cor de fundo do track */
+}
+
+.study-sessions-content::-webkit-scrollbar-thumb {
+  background-color: #888; /* Cor da barra de rolagem */
+  border-radius: 10px; /* Arredondar os cantos */
+}
+
+.study-sessions-content::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Cor ao passar o mouse */
+}
+
+/* Outros estilos permanecem os mesmos */
+.discipline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .discipline-section {
@@ -22,45 +66,23 @@
   margin-bottom: 20px;
 }
 
-.discipline-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .sessions-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
 }
 
-.session-card {
+.session-card,
+.new-session-card {
   background-color: #555;
   color: #fff;
   text-align: center;
-  width: calc(33.333% - 20px);
+  width: calc(33.333% - 20px); /* 3 colunas em telas grandes */
   min-height: 150px;
   border-radius: 8px;
 }
 
-.new-session-card {
-  background-color: #666;
-  color: #fff;
-  text-align: center;
-  width: calc(33.333% - 20px);
-  min-height: 150px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.new-session-card:hover,
-.session-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
+/* Modal */
 .modal-content {
   background-color: #444;
 }
@@ -68,4 +90,19 @@
 .add_session_text {
   color: #182b00;
   font-size: 1.5rem;
+}
+
+/* Estilos responsivos para telas menores */
+@media (max-width: 1024px) {
+  .session-card,
+  .new-session-card {
+    width: calc(50% - 20px); /* 2 colunas em telas médias */
+  }
+}
+
+@media (max-width: 768px) {
+  .session-card,
+  .new-session-card {
+    width: 100%; /* 1 coluna em telas pequenas */
+  }
 }

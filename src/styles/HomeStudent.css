@@ -1,26 +1,32 @@
-.content {
-  padding: 20px;
+/* Definindo a estrutura geral da página */
+.home-student {
+  display: flex;
+  min-height: 100vh;
+  background-color: #333;
+  padding-left: 200px; /* Largura da Sidebar */
   width: 100%;
 }
 
-.react-big-calendar {
-  font-family: 'Roboto', sans-serif;
+.home-student.sidebar-collapsed {
+  padding-left: 80px; /* Ajustar quando a sidebar estiver colapsada */
 }
 
-.rbc-calendar {
-  background-color: #f9f9f9;
-}
-
-.rbc-event {
-  background-color: #007bff;
+/* Garantir que o conteúdo ocupe o restante da página corretamente */
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
   color: white;
-  padding: 5px;
+  padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.rbc-event:hover {
-  background-color: #0056b3;
-}
-
-.rbc-month-view {
-  border: 1px solid #ddd;
+/* Ajuste adicional para garantir que o chat ocupe o espaço disponível */
+.chat-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
