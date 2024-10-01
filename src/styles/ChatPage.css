@@ -50,15 +50,15 @@
   font-size: 16px;
   line-height: 1.4;
   border-radius: 10px;
-  max-width: 40%; /* Limitar a largura máxima para que a mensagem não fique muito larga */
+  max-width: 70%; /* Limitar a largura máxima para que a mensagem não fique muito larga */
 }
 
 /* Mensagens do usuário alinhadas à direita */
 .chat-message.user {
-  background-color: #0084ff;
+  background-color: #000;
   color: #fff;
   align-self: flex-end; /* Alinha as mensagens à direita */
-  margin-left: auto; /* Faz com que o conteúdo vá para a direita */
+  width: auto; /* Ajusta a largura automaticamente */
 }
 
 /* Mensagens do bot alinhadas à esquerda */

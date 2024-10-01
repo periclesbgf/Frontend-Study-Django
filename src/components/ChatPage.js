@@ -23,6 +23,7 @@ const ChatPage = ({ sessionId }) => {
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     try {
+      setInput('');
       const response = await sendPrompt(input);
       const botMessage = { role: 'assistant', content: response.response };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
@@ -32,7 +33,6 @@ const ChatPage = ({ sessionId }) => {
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
 
-    setInput('');
   };
 
   const scrollToBottom = () => {
@@ -75,10 +75,10 @@ const ChatPage = ({ sessionId }) => {
             )}
             <Box
               sx={{
-                backgroundColor: msg.role === 'user' ? '#0084ff' : '#e0e0e0',
+                backgroundColor: msg.role === 'user' ? '#000' : '#e0e0e0',
                 color: msg.role === 'user' ? '#fff' : '#000',
                 padding: '10px',
-                borderRadius: '0px',
+                borderRadius: '10px',
                 maxWidth: '90%',  // Limitar a largura máxima da mensagem
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
