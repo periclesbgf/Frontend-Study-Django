@@ -34,7 +34,7 @@ p {
 
 .login-container input {
   width: 100%;
-  padding: 10px;
+  padding: 10px 0px;
   margin: 10px 0;
   border-radius: 4px;
   border: 1px solid #777;
