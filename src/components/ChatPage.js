@@ -61,11 +61,16 @@ const ChatPage = ({ sessionId }) => {
           <ListItem
             key={index}
             className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
-            sx={{ alignItems: 'flex-start' }}
+            sx={{ 
+              display: 'flex',
+              justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+              alignItems: 'flex-start',
+              padding: 0 // Remove padding extra no ListItem
+            }}
           >
             {msg.role === 'assistant' && (
               <ListItemAvatar>
-                <Avatar src={BotImage} alt="Assistente" />
+                <Avatar sx={{ width: 50, height: 50 }}  src={BotImage} alt="Assistente" />
               </ListItemAvatar>
             )}
             <Box
@@ -73,14 +78,15 @@ const ChatPage = ({ sessionId }) => {
                 backgroundColor: msg.role === 'user' ? '#0084ff' : '#e0e0e0',
                 color: msg.role === 'user' ? '#fff' : '#000',
                 padding: '10px',
-                borderRadius: '10px',
-                maxWidth: '100%',
+                borderRadius: '0px',
+                maxWidth: '90%',  // Limitar a largura máxima da mensagem
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
                 wordBreak: 'break-word',
                 whiteSpace: 'pre-wrap',
                 fontSize: '16px',
-                marginLeft: msg.role === 'user' ? 'auto' : '0',
+                marginLeft: msg.role === 'user' ? 'auto' : '0', // Mover mensagens do usuário para a direita
+                marginRight: msg.role === 'user' ? '0' : 'auto' // Mover mensagens do bot para a esquerda
               }}
             >
               {msg.content}
