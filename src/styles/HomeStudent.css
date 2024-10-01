@@ -1,4 +1,19 @@
 /* Definindo a estrutura geral da página */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #444; /* Cor do fundo do cabeçalho */
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header h2 {
+  margin: 0;
+}
 .home-student {
   display: flex;
   min-height: 100vh;
@@ -10,6 +25,9 @@
 .home-student.sidebar-collapsed {
   padding-left: 80px; /* Ajustar quando a sidebar estiver colapsada */
 }
+
+/* Cabeçalho (header) para o título e o ícone do usuário */
+
 
 /* Garantir que o conteúdo ocupe o restante da página corretamente */
 .content {
@@ -29,4 +47,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Estilo para o ícone de usuário no cabeçalho */
+.user-icon {
+  margin-left: auto; /* Garante que o ícone fique alinhado à direita */
 }

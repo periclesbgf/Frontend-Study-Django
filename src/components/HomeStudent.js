@@ -11,7 +11,7 @@ const HomeStudent = () => {
       <Sidebar />
       <div className="content">
         <h2>Bem-vindo ao Eden AI</h2>
-        <CalendarComponent></CalendarComponent>
+        <CalendarComponent />
         {/* Adicione aqui o conteúdo principal da página do estudante */}
       </div>
     </div>
