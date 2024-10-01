@@ -30,7 +30,7 @@
   padding: 10px;
   overflow-y: auto;
   background-color: #444;
-  border: 3px solid #0084ff;
+  border: 0px solid #000101;
   border-radius: 10px;
   margin: 15px 0;
   box-sizing: border-box;
@@ -64,15 +64,17 @@
 /* Mensagens do bot alinhadas à esquerda */
 .chat-message.assistant {
   background-color: #e0e0e0;
+  width: auto;
   color: #000;
   align-self: flex-start; /* Alinha as mensagens à esquerda */
   margin-right: auto; /* Faz com que o conteúdo vá para a esquerda */
+  max-width: 100%;
 }
 
 /* O campo de entrada e botão de envio */
 .chat-input-container {
   display: flex;
-  padding: 10px;
+  padding:00px;
   background-color: #444;
   border-top: 1px solid #555;
   box-sizing: border-box;
@@ -84,7 +86,7 @@
   background-color: #dadada;
   color: #000;
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 10px;
   border: none;
   outline: none;
 }
