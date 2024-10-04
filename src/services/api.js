@@ -21,20 +21,20 @@ const handleAuthError = (error) => {
 };
 
 // Function to register a new user (student or educator)
-export const registerUser = async (nome, email, senha, tipo_usuario) => {
+export const registerUser = async (nome, email, senha, tipo_usuario, special_code = null) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/create_account`, {
       nome: nome,
       email: email,
       senha: senha,
       tipo_usuario: tipo_usuario,
+      special_code: special_code,
     });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error("Failed to create account");
   }
 };
-
 
 export const recoverPassword = async (email) => {
     const response = await axios.post('/api/recover-password', { email });
@@ -311,5 +311,73 @@ export const deleteCalendarEvent = async (eventId) => {
   } catch (error) {
     console.error('Erro ao deletar evento:', error);
     throw error; // Repassar o erro para ser tratado no handleDeleteEvent
+  }
+};
+
+// GET all disciplines
+export const getDisciplines = async () => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${API_BASE_URL}/disciplines`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.disciplines;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// POST - Create a new discipline
+export const createDiscipline = async ({ nomeCurso, ementa, objetivos }) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/disciplines`,
+      { nome_curso: nomeCurso, ementa, objetivos },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// PUT - Update an existing discipline
+export const updateDiscipline = async (disciplineId, { nomeCurso, ementa, objetivos }) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/disciplines/${disciplineId}`,
+      { nome_curso: nomeCurso, ementa, objetivos },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// DELETE - Delete a discipline
+export const deleteDiscipline = async (disciplineId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/disciplines/${disciplineId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
   }
 };

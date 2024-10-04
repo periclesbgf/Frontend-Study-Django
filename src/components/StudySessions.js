@@ -17,7 +17,7 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import '../styles/StudySessions.css';
-import { getStudySessions, createStudySession, uploadDisciplinePDF } from '../services/api'; // Import API functions
+import { getStudySessions, createDiscipline, uploadDisciplinePDF } from '../services/api'; // Import API functions
 
 const StudySessions = () => {
   const navigate = useNavigate();
@@ -30,6 +30,8 @@ const StudySessions = () => {
   const [openSessionModal, setOpenSessionModal] = useState(false);
   const [openDisciplineModal, setOpenDisciplineModal] = useState(false);
   const [newDisciplineName, setNewDisciplineName] = useState('');
+  const [newDisciplineEmenta, setNewDisciplineEmenta] = useState('');
+  const [newDisciplineObjetivos, setNewDisciplineObjetivos] = useState('');
   const [pdfFile, setPdfFile] = useState(null);  // Estado para armazenar o arquivo PDF
 
   // Função para buscar as sessões do backend
@@ -54,11 +56,17 @@ const StudySessions = () => {
         // Se um arquivo PDF for carregado, faça o upload
         await uploadDisciplinePDF(pdfFile);
       } else {
-        // Caso contrário, cria a disciplina pelo nome
-        const newSession = await createStudySession(newDisciplineName); // Chama a função da API
-        setDisciplines([...disciplines, newSession]); // Atualiza o estado local
+        // Caso contrário, cria a disciplina pelo nome, ementa e objetivos
+        const newDiscipline = await createDiscipline({
+          nomeCurso: newDisciplineName,
+          ementa: newDisciplineEmenta,
+          objetivos: newDisciplineObjetivos
+        });
+        setDisciplines([...disciplines, newDiscipline]); // Atualiza o estado local
       }
       setNewDisciplineName('');
+      setNewDisciplineEmenta('');
+      setNewDisciplineObjetivos('');
       setOpenDisciplineModal(false);
       setPdfFile(null);  // Limpar o arquivo PDF após o upload
     } catch (error) {
@@ -147,7 +155,23 @@ const StudySessions = () => {
               onChange={(e) => setNewDisciplineName(e.target.value)}
               disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
             />
-            <InputLabel>Ou carregar arquivo PDF</InputLabel>
+            <TextField
+              label="Ementa"
+              fullWidth
+              margin="normal"
+              value={newDisciplineEmenta}
+              onChange={(e) => setNewDisciplineEmenta(e.target.value)}
+              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
+            />
+            <TextField
+              label="Objetivos"
+              fullWidth
+              margin="normal"
+              value={newDisciplineObjetivos}
+              onChange={(e) => setNewDisciplineObjetivos(e.target.value)}
+              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
+            />
+            <InputLabel>Ou carregue o arquivo PDF da EMENTA do curso</InputLabel>
             <Button variant="contained" component="label">
               Upload PDF
               <input type="file" hidden accept="application/pdf" onChange={handleFileUpload} />

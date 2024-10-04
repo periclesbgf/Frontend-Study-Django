@@ -130,3 +130,8 @@ p {
   padding: 0;
   text-decoration: none;
 }
+
+.login-container input::placeholder {
+  color: #ffffff; /* Altere essa cor para uma que seja mais visível */
+  opacity: 1; /* Garante que a opacidade seja total */
+}

@@ -1,4 +1,5 @@
-/* Global styles */
+/* src/styles/RegisterTeacher.css */
+
 body {
     font-family: Arial, sans-serif;
     background-color: #333;
@@ -9,20 +10,20 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-  }
-  
-  h1, h2 {
+}
+
+h1, h2 {
     font-size: 24px;
     color: #fff;
-  }
-  
-  p {
+}
+
+p {
     margin: 10px 0;
     color: #fff;
-  }
-  
-  /* Register form container */
-  .register-container, .login-container {
+}
+
+/* Register form container */
+.register-teacher-container {
     background-color: #444;
     padding: 40px;
     border-radius: 8px;
@@ -30,9 +31,9 @@ body {
     max-width: 400px;
     width: 100%;
     text-align: center;
-  }
-  
-  .register-container input, .login-container input {
+}
+
+.register-teacher-container input {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -41,9 +42,9 @@ body {
     font-size: 16px;
     background-color: #555;
     color: #fff;
-  }
-  
-  .register-container button, .login-container button {
+}
+
+.register-teacher-container button {
     width: 100%;
     padding: 10px;
     background-color: #4caf50;
@@ -52,24 +53,24 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-  }
-  
-  .register-container button:hover, .login-container button:hover {
+}
+
+.register-teacher-container button:hover {
     background-color: #45a049;
-  }
-  
-  /* Error and success messages */
-  .error {
+}
+
+/* Error and success messages */
+.error {
     color: red;
     margin-top: 10px;
-  }
-  
-  .success {
+}
+
+.success {
     color: green;
     margin-top: 10px;
-  }
-  
-  .register-container input::placeholder {
+}
+
+.register-teacher-container input::placeholder {
     color: #ffffff; /* Altere essa cor para uma que seja mais visível */
     opacity: 1; /* Garante que a opacidade seja total */
 }
