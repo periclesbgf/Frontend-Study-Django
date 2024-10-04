@@ -245,3 +245,22 @@ export const getCalendarEvents = async () => {
     handleAuthError(error);
   }
 };
+
+export const createCalendarEvent = async ({ title, description, start_time, end_time, location }) => {
+  const token = getAuthToken();  // Get the token from localStorage
+
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/calendar/events`,
+      { title, description, start_time, end_time, location },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Attach the JWT token
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);  // Handle token expiration or other auth errors
+  }
+};
