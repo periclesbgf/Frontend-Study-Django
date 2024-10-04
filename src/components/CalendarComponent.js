@@ -1,38 +1,46 @@
-import React, { useState } from 'react';
+// src/components/CalendarComponent.js
+
+import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Modal, Box, TextField, Button } from '@mui/material';
-import '../styles/CalendarComponent.css';  // Vamos utilizar uma folha de estilos separada
+import '../styles/CalendarComponent.css';  
+import { getCalendarEvents } from '../services/api'; // Importing API function
 
-// Configurando o localizador com moment.js
 const localizer = momentLocalizer(moment);
 
 const CalendarComponent = () => {
-  // Eventos fictícios
-  const [events, setEvents] = useState([
-    { title: 'Prova de Matemática', start: new Date(2024, 8, 20, 10, 0, 0), end: new Date(2024, 8, 20, 12, 0, 0) },
-    { title: 'Atividade de Física', start: new Date(2024, 8, 21, 14, 0, 0), end: new Date(2024, 8, 21, 16, 0, 0) },
-    { title: 'Sessão de Estudo', start: new Date(2024, 8, 22, 9, 0, 0), end: new Date(2024, 8, 22, 11, 0, 0) },
-  ]);
-
+  const [events, setEvents] = useState([]);  // State for storing events
   const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
-  // Função para abrir o modal e adicionar evento
+  // Function to load events from the backend
+  const loadCalendarEvents = async () => {
+    try {
+      const calendarEvents = await getCalendarEvents();
+      setEvents(calendarEvents);  // Update state with fetched events
+    } catch (error) {
+      console.error('Error loading calendar events:', error);
+    }
+  };
+
+  // Load events when the component mounts
+  useEffect(() => {
+    loadCalendarEvents();
+  }, []);
+
   const handleSelectSlot = ({ start, end }) => {
     setSelectedSlot({ start, end });
     setModalOpen(true);
   };
 
-  // Fechar modal
   const handleCloseModal = () => {
     setModalOpen(false);
     setNewEvent({ title: '', start: '', end: '' });
   };
 
-  // Adicionar evento
   const handleAddEvent = () => {
     if (!newEvent.title) return;
 
@@ -42,32 +50,32 @@ const CalendarComponent = () => {
       end: selectedSlot.end,
     };
 
-    setEvents([...events, event]);  // Adiciona evento ao estado
-    handleCloseModal();  // Fecha o modal
+    setEvents([...events, event]);  // Add the new event locally
+    handleCloseModal();  // Close the modal
   };
 
   return (
     <div>
       <h2 style={{ textAlign: 'center', color: '#fff' }}>Calendário de Estudo</h2>
-      <div className="calendar-container"> {/* Aplicando classe de estilo */}
+      <div className="calendar-container">
         <Calendar
           selectable
           localizer={localizer}
-          events={events}
+          events={events}  // Display the events from the backend
           defaultView="month"
-          views={['month', 'week', 'day', 'agenda']}  // Adicionando visualizações
-          step={30}  // Configura os intervalos de tempo (30 minutos)
-          timeslots={2}  // Mostra dois blocos de 30 minutos por hora
-          defaultDate={new Date()}  // Data padrão de visualização
+          views={['month', 'week', 'day', 'agenda']}
+          step={30}
+          timeslots={2}
+          defaultDate={new Date()}
           startAccessor="start"
           endAccessor="end"
           style={{ height: 600 }}
           onSelectSlot={handleSelectSlot}
-          onSelectEvent={(event) => alert(event.title)}  // Exibe o nome do evento ao clicar
+          onSelectEvent={(event) => alert(`${event.title}\nLocal: ${event.location}\nDescrição: ${event.description}`)}  // Display event details on click
         />
       </div>
 
-      {/* Modal para adicionar evento */}
+      {/* Modal to add event */}
       <Modal open={modalOpen} onClose={handleCloseModal}>
         <Box
           sx={{

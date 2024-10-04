@@ -142,3 +142,106 @@ export const uploadFile = async (question, code, file) => {
   }
 };
 
+// Get all study sessions
+export const getStudySessions = async () => {
+  const token = getAuthToken(); 
+  try {
+    const response = await axios.get(`${API_BASE_URL}/study_sessions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.study_sessions;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// Create a new study session
+export const createStudySession = async (disciplineName) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.post(`${API_BASE_URL}/study_sessions`, { discipline_name: disciplineName }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.new_session;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// Update a study session
+export const updateStudySession = async (sessionId, sessionData) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.put(`${API_BASE_URL}/study_sessions/${sessionId}`, sessionData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.updated_session;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// Delete a study session
+export const deleteStudySession = async (sessionId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/study_sessions/${sessionId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.message;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+export const uploadDisciplinePDF = async (file) => {
+  const token = localStorage.getItem('accessToken');  // Obtém o token de autenticação
+  const formData = new FormData();
+  formData.append('file', file);  // Adiciona o arquivo ao FormData
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/create_discipline_from_pdf`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',  // Cabeçalho para enviar arquivos
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao enviar PDF:', error);
+    throw error;
+  }
+};
+
+export const getCalendarEvents = async () => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/events`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Map events to the structure required by the calendar
+    const events = response.data.events.map((event) => ({
+      id: event.IdEvento,
+      title: event.Titulo,
+      start: new Date(event.Inicio), // Convert datetime to JavaScript Date object
+      end: new Date(event.Fim),
+      description: event.Descricao,
+      location: event.Local,
+    }));
+
+    return events;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};

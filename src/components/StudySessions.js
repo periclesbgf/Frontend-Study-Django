@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Grid2,
+  Grid,
   Card,
   CardContent,
   Typography,
@@ -11,78 +11,65 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  InputLabel
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material'; // Corrigindo a importação do AddIcon
-import Sidebar from './Sidebar';  // Importando o Sidebar
+import { Add as AddIcon } from '@mui/icons-material';
+import Sidebar from './Sidebar';
 import '../styles/StudySessions.css';
+import { getStudySessions, createStudySession, uploadDisciplinePDF } from '../services/api'; // Import API functions
 
 const StudySessions = () => {
   const navigate = useNavigate();
 
-  const [disciplines, setDisciplines] = useState([
-    {
-      id: 1,
-      nome: 'Matemática',
-      sessions: [
-        { id: 101, nome: 'Estudo de Álgebra', assunto: 'Álgebra avançada' },
-        { id: 102, nome: 'Geometria', assunto: 'Figuras e formas' },
-      ],
-    },
-    {
-      id: 2,
-      nome: 'Física',
-      sessions: [
-        { id: 201, nome: 'Mecânica Clássica', assunto: 'Leis de Newton' },
-        { id: 202, nome: 'Termodinâmica', assunto: 'Transferência de calor' },
-      ],
-    },
-    {
-      id: 3,
-      nome: 'História',
-      sessions: [
-        { id: 301, nome: 'História Antiga', assunto: 'Civilizações egípcias' },
-        { id: 302, nome: 'História Moderna', assunto: 'Revolução Industrial' },
-      ],
-    },
-  ]);
-
+  // State para guardar as disciplinas e sessões reais vindas do backend
+  const [disciplines, setDisciplines] = useState([]);
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [newSessionName, setNewSessionName] = useState('');
   const [newSessionSubject, setNewSessionSubject] = useState('');
   const [openSessionModal, setOpenSessionModal] = useState(false);
   const [openDisciplineModal, setOpenDisciplineModal] = useState(false);
   const [newDisciplineName, setNewDisciplineName] = useState('');
+  const [pdfFile, setPdfFile] = useState(null);  // Estado para armazenar o arquivo PDF
 
-  const createNewDiscipline = () => {
-    const newDiscipline = {
-      id: disciplines.length + 1,
-      nome: newDisciplineName,
-      sessions: [],
-    };
-    setDisciplines([...disciplines, newDiscipline]);
-    setNewDisciplineName('');
-    setOpenDisciplineModal(false);
+  // Função para buscar as sessões do backend
+  const loadStudySessions = async () => {
+    try {
+      const sessions = await getStudySessions();
+      setDisciplines(sessions); // Ajustar conforme a estrutura de dados retornada do backend
+    } catch (error) {
+      console.error('Erro ao carregar sessões de estudo', error);
+    }
   };
 
-  const createNewSession = (disciplineId) => {
-    const newSession = {
-      id: Math.floor(Math.random() * 1000),
-      nome: newSessionName,
-      assunto: newSessionSubject,
-    };
+  // Chama a função ao carregar o componente
+  useEffect(() => {
+    loadStudySessions();
+  }, []);
 
-    const updatedDisciplines = disciplines.map(discipline =>
-      discipline.id === disciplineId
-        ? { ...discipline, sessions: [...discipline.sessions, newSession] }
-        : discipline
-    );
+  // Função para criar uma nova disciplina via nome ou via PDF
+  const createNewDiscipline = async () => {
+    try {
+      if (pdfFile) {
+        // Se um arquivo PDF for carregado, faça o upload
+        await uploadDisciplinePDF(pdfFile);
+      } else {
+        // Caso contrário, cria a disciplina pelo nome
+        const newSession = await createStudySession(newDisciplineName); // Chama a função da API
+        setDisciplines([...disciplines, newSession]); // Atualiza o estado local
+      }
+      setNewDisciplineName('');
+      setOpenDisciplineModal(false);
+      setPdfFile(null);  // Limpar o arquivo PDF após o upload
+    } catch (error) {
+      console.error('Erro ao criar nova disciplina', error);
+    }
+  };
 
-    setDisciplines(updatedDisciplines);
-    setNewSessionName('');
-    setNewSessionSubject('');
-    setSelectedDiscipline(null);
-    setOpenSessionModal(false);
+  // Função para lidar com o upload de arquivos
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    setPdfFile(file);  // Armazena o arquivo PDF no estado
   };
 
   const handleSessionClick = (sessionId) => {
@@ -101,7 +88,7 @@ const StudySessions = () => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<AddIcon />}  // Uso do AddIcon corrigido
+            startIcon={<AddIcon />}
             onClick={() => setOpenDisciplineModal(true)}
           >
             Nova Disciplina
@@ -115,20 +102,20 @@ const StudySessions = () => {
                 {discipline.nome}
               </Typography>
 
-              <Grid2 container spacing={3}>
+              <Grid container spacing={3}>
                 {discipline.sessions.map((session, index) => (
-                  <Grid2 item xs={12} sm={6} md={4} key={index}>
+                  <Grid item xs={12} sm={6} md={4} key={index}>
                     <Card onClick={() => handleSessionClick(session.id)}>
                       <CardContent>
                         <Typography variant="h6">{session.nome}</Typography>
                         <Typography color="textSecondary">{session.assunto}</Typography>
                       </CardContent>
                     </Card>
-                  </Grid2>
+                  </Grid>
                 ))}
 
                 {/* Botão para adicionar nova sessão */}
-                <Grid2 item xs={12} sm={6} md={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <Card
                     onClick={() => {
                       setSelectedDiscipline(discipline.id);
@@ -138,44 +125,15 @@ const StudySessions = () => {
                   >
                     <CardContent>
                       <IconButton size="large">
-                        <AddIcon fontSize="large" /> <Typography className="add_session_text"  variant="body2">Nova Sessão</Typography>
+                        <AddIcon fontSize="large" /> <Typography className="add_session_text" variant="body2">Nova Sessão</Typography>
                       </IconButton>
                     </CardContent>
                   </Card>
-                </Grid2>
-              </Grid2>
+                </Grid>
+              </Grid>
             </div>
           ))}
         </div>
-
-        {/* Modal para criar nova sessão de estudo */}
-        <Dialog open={openSessionModal} onClose={() => setOpenSessionModal(false)}>
-          <DialogTitle>Criar Nova Sessão</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Nome da Sessão"
-              fullWidth
-              margin="normal"
-              value={newSessionName}
-              onChange={(e) => setNewSessionName(e.target.value)}
-            />
-            <TextField
-              label="Assunto"
-              fullWidth
-              margin="normal"
-              value={newSessionSubject}
-              onChange={(e) => setNewSessionSubject(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenSessionModal(false)} color="secondary">
-              Cancelar
-            </Button>
-            <Button onClick={() => createNewSession(selectedDiscipline)} color="primary">
-              Criar
-            </Button>
-          </DialogActions>
-        </Dialog>
 
         {/* Modal para criar nova disciplina */}
         <Dialog open={openDisciplineModal} onClose={() => setOpenDisciplineModal(false)}>
@@ -187,7 +145,14 @@ const StudySessions = () => {
               margin="normal"
               value={newDisciplineName}
               onChange={(e) => setNewDisciplineName(e.target.value)}
+              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
             />
+            <InputLabel>Ou carregar arquivo PDF</InputLabel>
+            <Button variant="contained" component="label">
+              Upload PDF
+              <input type="file" hidden accept="application/pdf" onChange={handleFileUpload} />
+            </Button>
+            {pdfFile && <Typography variant="body2">{pdfFile.name}</Typography>} {/* Exibe o nome do arquivo PDF */}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDisciplineModal(false)} color="secondary">

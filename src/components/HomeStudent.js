@@ -1,9 +1,9 @@
 // src/components/HomeStudent.js
 
 import React from 'react';
-import Sidebar from './Sidebar'; // Importando o componente Sidebar
+import Sidebar from './Sidebar';
 import '../styles/HomeStudent.css';
-import CalendarComponent from './CalendarComponent';  // Importando o componente de calendário
+import CalendarComponent from './CalendarComponent';  // Import the calendar component
 
 const HomeStudent = () => {
   return (
@@ -11,8 +11,8 @@ const HomeStudent = () => {
       <Sidebar />
       <div className="content">
         <h2>Bem-vindo ao Eden AI</h2>
-        <CalendarComponent />
-        {/* Adicione aqui o conteúdo principal da página do estudante */}
+        <CalendarComponent />  {/* Calendar displaying real events */}
+        {/* Add the main student page content here */}
       </div>
     </div>
   );
