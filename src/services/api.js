@@ -252,7 +252,13 @@ export const createCalendarEvent = async ({ title, description, start_time, end_
   try {
     const response = await axios.post(
       `${process.env.REACT_APP_API_URL}/calendar/events`,
-      { title, description, start_time, end_time, location },
+      {
+        title,
+        description,
+        start_time: start_time.toISOString(), // Converter para o formato ISO 8601
+        end_time: end_time.toISOString(),     // Converter para o formato ISO 8601
+        location,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,  // Attach the JWT token
@@ -262,5 +268,48 @@ export const createCalendarEvent = async ({ title, description, start_time, end_
     return response.data;
   } catch (error) {
     handleAuthError(error);  // Handle token expiration or other auth errors
+  }
+};
+
+export const updateCalendarEvent = async (eventId, { title, description, start_time, end_time, location }) => {
+  const token = getAuthToken();
+  console.log('Atualizando evento com os seguintes dados:', { title, description, start_time, end_time, location });
+
+  try {
+    const response = await axios.put(
+      `${process.env.REACT_APP_API_URL}/calendar/events/${eventId}`,
+      { title, description, start_time, end_time, location },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar evento:', error);
+  }
+};
+
+
+// Função para deletar um evento no calendário
+export const deleteCalendarEvent = async (eventId) => {
+  const token = getAuthToken();
+
+  try {
+    const response = await axios.delete(
+      `${process.env.REACT_APP_API_URL}/calendar/events/${eventId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log('Resposta do backend ao deletar evento:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar evento:', error);
+    throw error; // Repassar o erro para ser tratado no handleDeleteEvent
   }
 };

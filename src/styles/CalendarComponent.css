@@ -6,11 +6,14 @@
     padding: 20px;
     border-radius: 10px;
     color: #fff; /* Cor do texto para contraste */
+    height: 92%;
+    min-height: 90%; /* Tamanho mínimo do calendário */
 }
 
 /* Estilo para os dias e eventos */
 .rbc-month-view, .rbc-time-view {
     background-color: #282828; /* Cor de fundo da tabela do calendário */
+    min-height: 100%; /* Garante altura mínima */
 }
 
 .rbc-event {
@@ -56,7 +59,7 @@
 
 /* Estilo do dia atual */
 .rbc-today {
-    background-color: #333;
+    background-color: rgba(55, 185, 61, 0.3); /* Verde claro com transparência */
 }
 
 .rbc-day-bg {
