@@ -39,7 +39,7 @@ const CalendarComponent = () => {
       title: '',
       description: '',
       location: '',
-      start: moment(start).format('YYYY-MM-DDTHH:mm'),
+      start: moment(start).format('YYYY-MM-DDTHH:mm'), // Formato correto de datetime-local
       end: moment(end).format('YYYY-MM-DDTHH:mm'),
     });
     setModalOpen(true);
@@ -64,7 +64,7 @@ const CalendarComponent = () => {
       await createCalendarEvent({
         title,
         description,
-        start_time: moment(start).toDate(),
+        start_time: moment(start).toDate(), // Converter para objeto Date
         end_time: moment(end).toDate(),
         location,
       });
@@ -82,22 +82,13 @@ const CalendarComponent = () => {
       alert('Por favor, preencha todos os campos antes de atualizar o evento.');
       return;
     }
-  
+
     try {
-      console.log('Atualizando evento com os seguintes dados:', {
-        title,
-        description,
-        start,
-        end,
-        location,
-      });
-  
-      // Garantir que o ID do evento está definido
       if (!selectedEventId) {
         console.error('Erro: ID do evento não definido.');
         return;
       }
-  
+
       await updateCalendarEvent(selectedEventId, {
         title,
         description,
@@ -112,7 +103,7 @@ const CalendarComponent = () => {
     }
   };
 
-
+  // Manipulador para deletar um evento
   const handleDeleteEvent = async () => {
     if (!selectedEventId) {
       console.error('Erro: Nenhum evento selecionado para deletar.');
@@ -120,7 +111,6 @@ const CalendarComponent = () => {
     }
 
     try {
-      console.log(`Tentando deletar evento com ID: ${selectedEventId}`);
       await deleteCalendarEvent(selectedEventId);
       loadCalendarEvents(); // Atualiza os eventos após deletar um evento
       handleCloseModal();
@@ -149,12 +139,13 @@ const CalendarComponent = () => {
           onSelectSlot={handleSelectSlot}
           onSelectEvent={(event) => {
             setSelectedEventId(event.id);
+            // Não converte para o fuso horário local. Usa o formato ISO sem alterações.
             setNewEvent({
               title: event.title,
               description: event.description,
               location: event.location,
-              start: moment(event.start).format('YYYY-MM-DDTHH:mm'),
-              end: moment(event.end).format('YYYY-MM-DDTHH:mm'),
+              start: moment(event.start).format('YYYY-MM-DDTHH:mm'), // Mantém o horário original
+              end: moment(event.end).format('YYYY-MM-DDTHH:mm'), // Mantém o horário original
             });
             setModalOpen(true);
           }}

@@ -330,12 +330,12 @@ export const getDisciplines = async () => {
 };
 
 // POST - Create a new discipline
-export const createDiscipline = async ({ nomeCurso, ementa, objetivos }) => {
+export const createDiscipline = async ({ nomeCurso, ementa, objetivos, educator }) => {
   const token = getAuthToken();
   try {
     const response = await axios.post(
       `${API_BASE_URL}/disciplines`,
-      { nome_curso: nomeCurso, ementa, objetivos },
+      { nome_curso: nomeCurso, ementa, objetivos, educator },
       {
         headers: {
           Authorization: `Bearer ${token}`,
