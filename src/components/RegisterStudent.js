@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importa o hook useNavigate
 import { registerUser } from '../services/api';
 import '../styles/Register.css';
 
@@ -7,56 +8,57 @@ const RegisterStudent = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // Inicializa o hook useNavigate
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
       const response = await registerUser(name, email, password, 'student');
-      setMessage(response.message);  // Sucesso
+      setMessage(response.message);
+
+      // Redireciona para a tela de login após o registro bem-sucedido
+      setTimeout(() => {
+        navigate('/login'); // Navega para a tela de login
+      }, 1500); // Tempo de espera para exibir a mensagem de sucesso antes do redirecionamento
+
     } catch (err) {
-      if (err.detail && typeof err.detail === 'object' && err.detail.msg) {
-        // Extrair a mensagem correta do objeto de erro
-        setMessage(err.detail.msg);
-      } else if (Array.isArray(err.detail)) {
-        // Se o erro for uma lista, mapear os erros
-        const errorMessages = err.detail.map(error => error.msg).join(', ');
-        setMessage(errorMessages);
-      } else {
-        // Exibe uma mensagem padrão de falha
-        setMessage("Falha ao registrar a conta.");
-      }
+      setMessage(err.detail || "Falha ao registrar");
     }
   };
-  
 
   return (
     <div className="register-container">
-      <h1>Register as Student</h1>
+      <h1>Registrar como Estudante</h1>
       <form onSubmit={handleRegister}>
-        <input 
-          type="text" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          placeholder="Name" 
-          required 
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome"
+          required
         />
-        <input 
-          type="email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          placeholder="Email" 
-          required 
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          required
         />
-        <input 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="Password" 
-          required 
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Senha"
+          required
         />
-        <button type="submit">Register</button>
+        <button type="submit">Registrar</button>
       </form>
       {message && <p>{message}</p>}
+      
+      {/* Mensagem de segurança da senha */}
+      <p className="password-security">
+        A sua senha é protegida utilizando criptografia de hash. Isso significa que, mesmo que alguém tenha acesso ao banco de dados, não conseguirá visualizar ou recuperar a senha que você digitou.
+      </p>
     </div>
   );
 };

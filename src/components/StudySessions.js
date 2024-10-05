@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Grid,
+  Grid2,
   Card,
   CardContent,
   Typography,
@@ -12,17 +12,20 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  InputLabel
+  InputLabel,
+  MenuItem,
+  Select,
+  CircularProgress,
+  Chip,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import '../styles/StudySessions.css';
-import { getStudySessions, createDiscipline, uploadDisciplinePDF } from '../services/api'; // Import API functions
+import { getStudySessions, createDiscipline, uploadDisciplinePDF, getAllEducators } from '../services/api';
 
 const StudySessions = () => {
   const navigate = useNavigate();
 
-  // State para guardar as disciplinas e sessões reais vindas do backend
   const [disciplines, setDisciplines] = useState([]);
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [newSessionName, setNewSessionName] = useState('');
@@ -32,43 +35,61 @@ const StudySessions = () => {
   const [newDisciplineName, setNewDisciplineName] = useState('');
   const [newDisciplineEmenta, setNewDisciplineEmenta] = useState('');
   const [newDisciplineObjetivos, setNewDisciplineObjetivos] = useState('');
-  const [pdfFile, setPdfFile] = useState(null);  // Estado para armazenar o arquivo PDF
+  const [pdfFile, setPdfFile] = useState(null);
+  const [educators, setEducators] = useState([]);
+  const [selectedEducator, setSelectedEducator] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Função para buscar as sessões do backend
+  // Função para carregar os professores
+  const loadEducators = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllEducators();
+      setEducators(response.educators);
+    } catch (error) {
+      console.error('Erro ao carregar professores', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para carregar as sessões de estudo
   const loadStudySessions = async () => {
     try {
       const sessions = await getStudySessions();
-      setDisciplines(sessions); // Ajustar conforme a estrutura de dados retornada do backend
+      setDisciplines(sessions);
     } catch (error) {
       console.error('Erro ao carregar sessões de estudo', error);
     }
   };
 
-  // Chama a função ao carregar o componente
+  // Carrega os dados ao montar o componente
   useEffect(() => {
     loadStudySessions();
+    loadEducators();
   }, []);
 
-  // Função para criar uma nova disciplina via nome ou via PDF
+  // Função para criar uma nova disciplina
   const createNewDiscipline = async () => {
     try {
       if (pdfFile) {
-        // Se um arquivo PDF for carregado, faça o upload
         await uploadDisciplinePDF(pdfFile);
       } else {
-        // Caso contrário, cria a disciplina pelo nome, ementa e objetivos
         const newDiscipline = await createDiscipline({
           nomeCurso: newDisciplineName,
           ementa: newDisciplineEmenta,
-          objetivos: newDisciplineObjetivos
+          objetivos: newDisciplineObjetivos,
+          professorId: selectedEducator || null,
         });
-        setDisciplines([...disciplines, newDiscipline]); // Atualiza o estado local
+        setDisciplines([...disciplines, newDiscipline]);
       }
+      // Limpar os valores após criar a disciplina
       setNewDisciplineName('');
       setNewDisciplineEmenta('');
       setNewDisciplineObjetivos('');
+      setSelectedEducator('');
       setOpenDisciplineModal(false);
-      setPdfFile(null);  // Limpar o arquivo PDF após o upload
+      setPdfFile(null);
     } catch (error) {
       console.error('Erro ao criar nova disciplina', error);
     }
@@ -77,16 +98,22 @@ const StudySessions = () => {
   // Função para lidar com o upload de arquivos
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    setPdfFile(file);  // Armazena o arquivo PDF no estado
+    setPdfFile(file);
   };
 
+  // Função para lidar com o clique na sessão
   const handleSessionClick = (sessionId) => {
     navigate(`/study_sessions/${sessionId}`);
   };
 
+  // Função para limpar o professor selecionado
+  const handleDeleteEducator = () => {
+    setSelectedEducator(''); // Resetar o valor ao clicar no X
+  };
+
   return (
     <div className="study-sessions-container">
-      <Sidebar /> {/* Adicionando o Sidebar */}
+      <Sidebar />
       <div className="study-sessions-content">
         <Typography variant="h3" align="center" gutterBottom>
           Sessões de Estudo por Disciplina
@@ -110,20 +137,19 @@ const StudySessions = () => {
                 {discipline.nome}
               </Typography>
 
-              <Grid container spacing={3}>
+              <Grid2 container spacing={3}>
                 {discipline.sessions.map((session, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grid2 item xs={12} sm={6} md={4} key={index}>
                     <Card onClick={() => handleSessionClick(session.id)}>
                       <CardContent>
                         <Typography variant="h6">{session.nome}</Typography>
                         <Typography color="textSecondary">{session.assunto}</Typography>
                       </CardContent>
                     </Card>
-                  </Grid>
+                  </Grid2>
                 ))}
 
-                {/* Botão para adicionar nova sessão */}
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid2 item xs={12} sm={6} md={4}>
                   <Card
                     onClick={() => {
                       setSelectedDiscipline(discipline.id);
@@ -137,13 +163,12 @@ const StudySessions = () => {
                       </IconButton>
                     </CardContent>
                   </Card>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </div>
           ))}
         </div>
 
-        {/* Modal para criar nova disciplina */}
         <Dialog open={openDisciplineModal} onClose={() => setOpenDisciplineModal(false)}>
           <DialogTitle>Criar Nova Disciplina</DialogTitle>
           <DialogContent>
@@ -153,7 +178,7 @@ const StudySessions = () => {
               margin="normal"
               value={newDisciplineName}
               onChange={(e) => setNewDisciplineName(e.target.value)}
-              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
+              disabled={pdfFile !== null}
             />
             <TextField
               label="Ementa"
@@ -161,7 +186,7 @@ const StudySessions = () => {
               margin="normal"
               value={newDisciplineEmenta}
               onChange={(e) => setNewDisciplineEmenta(e.target.value)}
-              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
+              disabled={pdfFile !== null}
             />
             <TextField
               label="Objetivos"
@@ -169,14 +194,54 @@ const StudySessions = () => {
               margin="normal"
               value={newDisciplineObjetivos}
               onChange={(e) => setNewDisciplineObjetivos(e.target.value)}
-              disabled={pdfFile !== null}  // Desabilita o campo se o PDF for carregado
+              disabled={pdfFile !== null}
             />
-            <InputLabel>Ou carregue o arquivo PDF da EMENTA do curso</InputLabel>
+
+            {/* Dropdown de Professores */}
+            <InputLabel>Professor</InputLabel>
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Select
+                fullWidth
+                value={selectedEducator}
+                onChange={(e) => setSelectedEducator(e.target.value)}
+              >
+                {educators.length > 0 ? (
+                  educators.map((educator, index) => (
+                    <MenuItem key={index} value={educator}>
+                      {educator}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Nenhum professor encontrado</MenuItem>
+                )}
+              </Select>
+            )}
+
+            {/* Renderizar o Chip se o educador for selecionado */}
+            {selectedEducator && (
+              <div style={{ marginTop: '10px' }}>
+                <Chip
+                  label={selectedEducator}
+                  onDelete={handleDeleteEducator} // Chama a função para resetar o valor ao clicar no X
+                  deleteIcon={<CancelIcon />}
+                  sx={{
+                    backgroundColor: '#f0f0f0',
+                    color: '#000', // Garantir que a cor do texto seja preto
+                    fontWeight: 'bold',
+                    '.MuiChip-label': { color: '#000 !important' }, // Forçar a cor do texto
+                  }}
+                />
+              </div>
+            )}
+
+            <InputLabel style={{ marginTop: '20px' }}>Ou carregue o arquivo PDF da EMENTA do curso</InputLabel>
             <Button variant="contained" component="label">
               Upload PDF
               <input type="file" hidden accept="application/pdf" onChange={handleFileUpload} />
             </Button>
-            {pdfFile && <Typography variant="body2">{pdfFile.name}</Typography>} {/* Exibe o nome do arquivo PDF */}
+            {pdfFile && <Typography variant="body2">{pdfFile.name}</Typography>}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDisciplineModal(false)} color="secondary">

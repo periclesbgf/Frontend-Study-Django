@@ -1,26 +1,3 @@
-/* Global styles */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #333;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-h1, h2 {
-  font-size: 24px;
-  color: #fff;
-}
-
-p {
-  margin: 10px 0;
-  color: #fff;
-}
-
 /* Login form container */
 .login-container {
   background-color: #444;
@@ -30,11 +7,12 @@ p {
   max-width: 400px;
   width: 100%;
   text-align: center;
+  color: #fff;
 }
 
 .login-container input {
   width: 100%;
-  padding: 10px 0px;
+  padding: 10px;
   margin: 10px 0;
   border-radius: 4px;
   border: 1px solid #777;
@@ -46,7 +24,7 @@ p {
 .login-container button {
   width: 100%;
   padding: 10px;
-  background-color: #4caf50;
+  background-color: #1e8449; /* Botão verde mais escuro para melhor contraste */
   color: white;
   border: none;
   border-radius: 4px;
@@ -55,7 +33,7 @@ p {
 }
 
 .login-container button:hover {
-  background-color: #45a049;
+  background-color: #27ae60; /* Tom mais claro no hover */
 }
 
 /* Error message */
@@ -68,19 +46,23 @@ p {
 .login-container p button {
   background: none;
   border: none;
-  color: #007bff;
+  color: #61a4eb;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0;
+  margin-top: 15px; /* Adicionado para dar mais espaço */
+  display: block;
+  text-align: center;
 }
 
 .login-container p button:hover {
   text-decoration: underline;
+  color: #0056b3; /* Cor mais escura no hover */
 }
 
 /* Password recovery modal */
 .recovery-modal {
-  background-color: #444; /* Light black for modal background */
+  background-color: #444;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -90,6 +72,11 @@ p {
   transform: translate(-50%, -50%);
   width: 100%;
   max-width: 350px;
+}
+
+.recovery-modal h2 {
+  color: #fff;
+  margin-bottom: 20px;
 }
 
 .recovery-modal input {
@@ -118,9 +105,11 @@ p {
   background-color: #0069d9;
 }
 
+/* Success message */
 .success {
   color: green;
   margin-top: 10px;
+  text-align: center;
 }
 
 .ResgisterLoginLink {
@@ -132,6 +121,29 @@ p {
 }
 
 .login-container input::placeholder {
-  color: #ffffff; /* Altere essa cor para uma que seja mais visível */
-  opacity: 1; /* Garante que a opacidade seja total */
+  color: #ffffff;
+  opacity: 1;
+}
+
+.register-prompt {
+  margin-top: 20px;
+  font-size: 16px;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* Estilos para os links de registro */
+.register-link {
+  color: #abffce; /* Cor verde mais escura para melhor contraste */
+  font-weight: bold;
+  text-decoration: underline; /* Adiciona sublinhado para garantir distinção */
+  padding: 0 5px;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+span {
+  color: #ffffff; 
 }

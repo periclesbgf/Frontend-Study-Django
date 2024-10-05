@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { loginUser, recoverPassword } from '../services/api'; 
+import { loginUser, recoverPassword } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css';
 
@@ -16,10 +16,10 @@ const Login = () => {
     e.preventDefault();
     try {
       const data = await loginUser(email, password);
-      localStorage.setItem('accessToken', data.access_token);  // Store the token
-      navigate('/home-student');  // Redirect to the HomeStudent page
+      localStorage.setItem('accessToken', data.access_token);  // Armazena o token
+      navigate('/home-student');  // Redireciona para a página HomeStudent
     } catch (err) {
-      setError(err.detail || "Failed to login");
+      setError(err.detail || "Falha ao fazer login");
     }
   };
 
@@ -27,9 +27,9 @@ const Login = () => {
     e.preventDefault();
     try {
       await recoverPassword(recoveryEmail);
-      setRecoveryMessage("Password reset link sent to your email!");
+      setRecoveryMessage("Link de redefinição de senha enviado para o seu e-mail!");
     } catch (err) {
-      setError("Failed to send recovery email");
+      setError("Falha ao enviar o e-mail de recuperação");
     }
   };
 
@@ -41,43 +41,47 @@ const Login = () => {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          placeholder="E-mail"
           required
         />
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
+          placeholder="Senha"
           required
         />
-        <button type="submit">Login</button>
+        <button type="submit">Entrar</button>
       </form>
       {error && <p className="error">{error}</p>}
 
       <p>
-        <button onClick={() => setShowRecovery(true)}>Forgot Password?</button>
+        <button onClick={() => setShowRecovery(true)}>Esqueceu sua senha?</button>
       </p>
 
       {showRecovery && (
         <div className="recovery-modal">
-          <h2>Recover Password</h2>
+          <h2>Recuperar Senha</h2>
           <form onSubmit={handlePasswordRecovery}>
             <input
               type="email"
               value={recoveryEmail}
               onChange={(e) => setRecoveryEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Digite seu e-mail"
               required
             />
-            <button type="submit">Send Recovery Email</button>
+            <button type="submit">Enviar E-mail de Recuperação</button>
           </form>
           {recoveryMessage && <p className="success">{recoveryMessage}</p>}
         </div>
       )}
 
-      <p>
-        Don't have an account? <Link className="ResgisterLoginLink" to="/register-student">Register as a Student</Link>
+      <p className="register-prompt">
+        Não tem uma conta?
+        <br />
+        <Link className="register-link" to="/register-student">Registrar como Estudante</Link>
+        <span> ou </span>
+        <Link className="register-link" to="/register-teacher">Registrar como Professor</Link>
       </p>
     </div>
   );

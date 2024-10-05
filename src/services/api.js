@@ -381,3 +381,18 @@ export const deleteDiscipline = async (disciplineId) => {
     handleAuthError(error);
   }
 };
+
+export const getAllEducators = async () => {
+  const token = localStorage.getItem('accessToken'); // Obtém o token do armazenamento local
+  try {
+    const response = await axios.get(`${API_BASE_URL}/educators`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Inclui o token de autenticação
+      },
+    });
+    return response.data; // Retorna os dados do response
+  } catch (error) {
+    console.error('Erro ao buscar educadores:', error);
+    throw error;
+  }
+};
