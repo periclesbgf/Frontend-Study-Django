@@ -8,19 +8,38 @@ import StudySessions from './components/StudySessions';
 import StudySession from './components/StudySession';
 import Workspace from './components/Workspace';
 import PrivateRoute from './components/PrivateRoute';
-import Dashboard from './components/Dashboard'
+import Dashboard from './components/Dashboard';
+import DisciplineSessions from './components/DisciplineSessions'; // Importando a página de Discipline Sessions
 
 const AppRoutes = () => (
   <Router>
     <Routes>
+      {/* Página inicial */}
       <Route path="/" element={<Home />} />
+
+      {/* Rotas de registro */}
       <Route path="/register-student" element={<RegisterStudent />} />
       <Route path="/register-teacher" element={<RegisterTeacher />} />
+
+      {/* Login */}
       <Route path="/login" element={<Login />} />
+
+      {/* Home do estudante */}
       <Route path="/home-student" element={<PrivateRoute><HomeStudent /></PrivateRoute>} />
-      <Route path="/study_sessions" element={<PrivateRoute><StudySessions /></PrivateRoute>} />
-      <Route path="/study_sessions/:sessionId" element={<PrivateRoute><StudySession /></PrivateRoute>} />
+
+      {/* Discipline Sessions: Exibe os cards de disciplinas */}
+      <Route path="/discipline_sessions" element={<PrivateRoute><DisciplineSessions /></PrivateRoute>} />
+
+      {/* Study Sessions: Exibe as sessões de estudo de uma disciplina específica */}
+      <Route path="/study_sessions/:disciplineId" element={<PrivateRoute><StudySessions /></PrivateRoute>} />
+
+      {/* Study Session: Exibe uma sessão de estudo específica dentro de uma disciplina */}
+      <Route path="/study_sessions/:disciplineId/:sessionId" element={<PrivateRoute><StudySession /></PrivateRoute>} />
+
+      {/* Dashboard */}
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+
+      {/* Workspace */}
       <Route path="/workspace" element={<PrivateRoute><Workspace /></PrivateRoute>} />
     </Routes>
   </Router>

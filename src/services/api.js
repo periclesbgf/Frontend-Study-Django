@@ -396,3 +396,19 @@ export const getAllEducators = async () => {
     throw error;
   }
 };
+
+// Função para buscar sessões de estudo por disciplina
+export const getStudySessionFromDiscipline = async (disciplineName) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${API_BASE_URL}/study_sessions/discipline`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: { discipline_name: disciplineName },
+    });
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};

@@ -1,0 +1,134 @@
+/* DisciplineSessions.css */
+.discipline-sessions-container {
+  display: flex;
+  height: 100vh;
+  background-color: #2c2f33; /* Fundo do container */
+}
+
+.discipline-sessions-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: #36393f;
+  margin-left: 250px; /* Afasta do sidebar */
+  overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura */
+  overflow-x: hidden; /* Impede rolagem horizontal */
+}
+
+.discipline-actions {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.discipline-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* Alinhamento à esquerda */
+  gap: 20px; /* Defina um valor menor, por exemplo 10px */
+  row-gap: 10px; /* Ajuste a distância vertical específica entre os cards */
+  padding-right: 10px; /* Para evitar sobreposição com a barra de rolagem */
+  overflow-y: auto; /* Permite rolar verticalmente caso o número de cards ultrapasse o espaço */
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent; /* Barra de rolagem personalizada */
+}
+
+.discipline-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.discipline-list::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+}
+
+.discipline-list::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
+
+/* Estilos para os cards */
+.card {
+  width: 250px; /* Largura fixa */
+  min-height: 150px; /* Altura mínima */
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Garante que o conteúdo ocupe todo o espaço disponível */
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-content {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  word-wrap: break-word; /* Permite que o título quebre em várias linhas, se necessário */
+}
+
+.card-description {
+  font-size: 0.9rem;
+  color: #666;
+  word-wrap: break-word; /* Permite que a descrição quebre em várias linhas, se necessário */
+  white-space: normal; /* Permite que o texto use múltiplas linhas */
+  overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o card */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
+  -webkit-box-orient: vertical;
+}
+
+/* Modal */
+.MuiDialogContent-root {
+  background-color: #f0f0f0;
+}
+
+.MuiDialogActions-root {
+  background-color: #f0f0f0;
+}
+
+/* Exibir o nome do arquivo de PDF abaixo do botão de upload */
+.pdf-file-name {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* Exibe o chip do professor selecionado */
+.selected-educator-chip {
+  margin-top: 10px;
+  background-color: #f0f0f0;
+  color: #000;
+  font-weight: bold;
+}
+
+/* Estilo para o label do Chip dentro de .selected-educator-chip */
+.selected-educator-chip .MuiChip-label {
+  color: #000 !important; /* Garantir que a cor do texto seja preto */
+}
+/* Responsividade para telas menores */
+@media (max-width: 1024px) {
+  .card {
+    width: 48%; /* Ajusta o tamanho dos cards para 2 colunas */
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    width: 100%; /* Em telas pequenas, cards ocupam toda a largura */
+  }
+}

@@ -1,5 +1,3 @@
-// src/components/Sidebar.js
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,9 +30,9 @@ const Sidebar = ({ onToggle }) => {
         <FontAwesomeIcon icon={faChartBar} className="icon" />
         {!isCollapsed && 'Dashboard'}
       </button>
-      <button onClick={() => navigate('/study_sessions')}>
+      <button onClick={() => navigate('/discipline_sessions')}> {/* Alterei a rota para discipline_sessions */}
         <FontAwesomeIcon icon={faFolder} className="icon" />
-        {!isCollapsed && 'Study Sessions'}
+        {!isCollapsed && 'Discipline Sessions'}
       </button>
       <button onClick={() => navigate('/workspace')}>
         <FontAwesomeIcon icon={faBriefcase} className="icon" />

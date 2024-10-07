@@ -1,26 +1,43 @@
-// src/components/StudySession.js
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import ChatPage from './ChatPage';
-import Sidebar from './Sidebar'; // Certifique-se de que o Sidebar está importando o onToggle
+import { Loader, Header, Icon } from 'semantic-ui-react';
+import Sidebar from './Sidebar';
 import '../styles/StudySession.css';
+import { getStudySessionFromDiscipline } from '../services/api'; // Atualizando a função importada
 
 const StudySession = () => {
-  const { sessionId } = useParams();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { disciplineId, sessionId } = useParams(); // Pega os IDs da disciplina e sessão
+  const [sessionDetails, setSessionDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSidebarToggle = (collapsed) => {
-    setIsSidebarCollapsed(collapsed);
-  };
+  useEffect(() => {
+    const loadSessionDetails = async () => {
+      setLoading(true);
+      const sessions = await getStudySessionFromDiscipline(disciplineId); // Buscando todas as sessões da disciplina
+      const selectedSession = sessions.study_sessions.find(session => session.id === sessionId); // Encontrando a sessão específica
+      setSessionDetails(selectedSession);
+      setLoading(false);
+    };
+    loadSessionDetails();
+  }, [disciplineId, sessionId]);
+
+  if (loading) {
+    return <Loader active inline="centered" />;
+  }
+
+  if (!sessionDetails) {
+    return <p>Nenhum detalhe encontrado para esta sessão.</p>;
+  }
 
   return (
-    <div className={`study-session-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <Sidebar onToggle={handleSidebarToggle} />
+    <div className="study-session-container">
+      <Sidebar />
       <div className="study-session-content">
-        <div className="chat-wrapper">
-          <ChatPage sessionId={sessionId} />
-        </div>
+        <Header as="h2">
+          <Icon name="book" />
+          <Header.Content>{sessionDetails.nome}</Header.Content>
+        </Header>
+        <p>{sessionDetails.descricao}</p>
       </div>
     </div>
   );
