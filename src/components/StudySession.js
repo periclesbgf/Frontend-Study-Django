@@ -1,43 +1,64 @@
-import React, { useState, useEffect } from 'react';
+// src/components/StudySession.js
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader, Header, Icon } from 'semantic-ui-react';
+import { Typography } from '@mui/material';
 import Sidebar from './Sidebar';
-import '../styles/StudySession.css';
-import { getStudySessionFromDiscipline } from '../services/api'; // Atualizando a função importada
+import { getStudySessionById } from '../services/api';
 
 const StudySession = () => {
-  const { disciplineId, sessionId } = useParams(); // Pega os IDs da disciplina e sessão
-  const [sessionDetails, setSessionDetails] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { sessionId } = useParams();
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Função para carregar a sessão de estudo
+  const loadStudySession = async () => {
+    setLoading(true);
+    try {
+      const response = await getStudySessionById(sessionId);
+      if (response && response.study_session) {
+        setSession(response.study_session);
+      } else {
+        console.error('Sessão de estudo não encontrada.');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar a sessão de estudo:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadSessionDetails = async () => {
-      setLoading(true);
-      const sessions = await getStudySessionFromDiscipline(disciplineId); // Buscando todas as sessões da disciplina
-      const selectedSession = sessions.study_sessions.find(session => session.id === sessionId); // Encontrando a sessão específica
-      setSessionDetails(selectedSession);
-      setLoading(false);
-    };
-    loadSessionDetails();
-  }, [disciplineId, sessionId]);
-
-  if (loading) {
-    return <Loader active inline="centered" />;
-  }
-
-  if (!sessionDetails) {
-    return <p>Nenhum detalhe encontrado para esta sessão.</p>;
-  }
+    loadStudySession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
 
   return (
     <div className="study-session-container">
       <Sidebar />
       <div className="study-session-content">
-        <Header as="h2">
-          <Icon name="book" />
-          <Header.Content>{sessionDetails.nome}</Header.Content>
-        </Header>
-        <p>{sessionDetails.descricao}</p>
+        {loading ? (
+          <Typography variant="body1" align="center">
+            Carregando sessão de estudo...
+          </Typography>
+        ) : session ? (
+          <>
+            <Typography variant="h4">{session.Assunto}</Typography>
+            <Typography variant="body1">
+              Início: {new Date(session.Inicio).toLocaleString()}
+            </Typography>
+            <Typography variant="body1">
+              Fim: {new Date(session.Fim).toLocaleString()}
+            </Typography>
+            <Typography variant="body1">
+              Produtividade: {session.Produtividade}
+            </Typography>
+            {/* Outros detalhes da sessão */}
+          </>
+        ) : (
+          <Typography variant="body1" align="center">
+            Sessão de estudo não encontrada.
+          </Typography>
+        )}
       </div>
     </div>
   );

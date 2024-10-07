@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -20,8 +19,13 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
-import '../styles/DisciplineSessions.css'; // Importando o CSS atualizado
-import { getDisciplines, createDiscipline, uploadDisciplinePDF, getAllEducators } from '../services/api';
+import '../styles/DisciplineSessions.css';
+import {
+  getDisciplines,
+  createDiscipline,
+  uploadDisciplinePDF,
+  getAllEducators,
+} from '../services/api';
 
 const DisciplineSessions = () => {
   const navigate = useNavigate();
@@ -31,7 +35,7 @@ const DisciplineSessions = () => {
   const [newDisciplineName, setNewDisciplineName] = useState('');
   const [newDisciplineEmenta, setNewDisciplineEmenta] = useState('');
   const [newDisciplineObjetivos, setNewDisciplineObjetivos] = useState('');
-  const [pdfFile, setPdfFile] = useState(null); // Guarda o arquivo PDF
+  const [pdfFile, setPdfFile] = useState(null);
   const [educators, setEducators] = useState([]);
   const [selectedEducator, setSelectedEducator] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,17 +101,17 @@ const DisciplineSessions = () => {
   // Função para lidar com o upload de arquivos
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    setPdfFile(file); // Salva o arquivo no estado
+    setPdfFile(file);
   };
 
   // Função para lidar com o clique na disciplina
-  const handleDisciplineClick = (disciplineId) => {
-    navigate(`/study_sessions/${disciplineId}`);
+  const handleDisciplineClick = (disciplineName) => {
+    navigate(`/study_sessions/${encodeURIComponent(disciplineName)}`);
   };
 
   // Função para limpar o professor selecionado
   const handleDeleteEducator = () => {
-    setSelectedEducator(''); // Reseta o valor ao clicar no X
+    setSelectedEducator('');
   };
 
   return (
@@ -131,22 +135,28 @@ const DisciplineSessions = () => {
 
         <div className="discipline-list">
           {loading ? (
-            <Typography variant="body1" align="center">Carregando disciplinas...</Typography>
+            <Typography variant="body1" align="center">
+              Carregando disciplinas...
+            </Typography>
+          ) : disciplines.length > 0 ? (
+            disciplines.map((discipline) => (
+              <Card
+                key={discipline.IdCurso}
+                className="card"
+                onClick={() => handleDisciplineClick(discipline.NomeCurso)}
+              >
+                <CardContent className="card-content">
+                  <Typography className="card-title">{discipline.NomeCurso}</Typography>
+                  <Typography className="card-description">
+                    {discipline.Ementa ? discipline.Ementa : 'Sem descrição disponível'}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))
           ) : (
-            disciplines.length > 0 ? (
-              disciplines.map((discipline) => (
-                <Card key={discipline.IdCurso} className="card" onClick={() => handleDisciplineClick(discipline.IdCurso)}>
-                  <CardContent className="card-content">
-                    <Typography className="card-title">{discipline.NomeCurso}</Typography>
-                    <Typography className="card-description">
-                      {discipline.Ementa ? discipline.Ementa : 'Sem descrição disponível'}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Typography variant="body1" align="center">Nenhuma disciplina encontrada.</Typography>
-            )
+            <Typography variant="body1" align="center">
+              Nenhuma disciplina encontrada.
+            </Typography>
           )}
         </div>
 
@@ -218,15 +228,20 @@ const DisciplineSessions = () => {
               </div>
             )}
 
-            <InputLabel style={{ marginTop: '20px' }}>Ou carregue o arquivo PDF da EMENTA do curso</InputLabel>
+            <InputLabel style={{ marginTop: '20px' }}>
+              Ou carregue o arquivo PDF da EMENTA do curso
+            </InputLabel>
             <Button variant="contained" component="label">
               Upload PDF
               <input type="file" hidden accept="application/pdf" onChange={handleFileUpload} />
             </Button>
 
             {/* Exibe o nome do arquivo após o upload */}
-            {pdfFile && <Typography variant="body2" style={{ marginTop: '10px', color: '#000'}}>{pdfFile.name}</Typography>}
-
+            {pdfFile && (
+              <Typography variant="body2" style={{ marginTop: '10px', color: '#000' }}>
+                {pdfFile.name}
+              </Typography>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDisciplineModal(false)} color="secondary">

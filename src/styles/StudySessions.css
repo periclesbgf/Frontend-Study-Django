@@ -1,127 +1,115 @@
-/* DisciplineSessions.css */
-
-.discipline-sessions-container {
+/* StudySessions.css */
+.study-sessions-container {
   display: flex;
   height: 100vh;
-  overflow: hidden;
-  background-color: #f5f5f5; /* Fundo mais suave */
+  background-color: #2c2f33; /* Fundo do container */
 }
 
-.discipline-sessions-content {
+.study-sessions-content {
   flex: 1;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  background-color: #36393f;
+  margin-left: 250px; /* Afasta do sidebar */
+  overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura */
+  overflow-x: hidden; /* Impede rolagem horizontal */
 }
 
-.discipline-actions {
+.study-actions {
   margin-bottom: 20px;
+  text-align: center;
 }
 
-.discipline-list {
+.session-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  height: 80vh; /* Área onde os cards aparecerão */
-  overflow-y: auto; /* Rolagem vertical */
+  justify-content: flex-start; /* Alinhamento à esquerda */
+  gap: 20px; /* Defina um valor menor, por exemplo 10px */
+  row-gap: 10px; /* Ajuste a distância vertical específica entre os cards */
   padding-right: 10px; /* Para evitar sobreposição com a barra de rolagem */
+  overflow-y: auto; /* Permite rolar verticalmente caso o número de cards ultrapasse o espaço */
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 transparent; /* Barra de rolagem personalizada */
 }
 
-.discipline-list::-webkit-scrollbar {
+.session-list::-webkit-scrollbar {
   width: 8px;
 }
 
-.discipline-list::-webkit-scrollbar-thumb {
+.session-list::-webkit-scrollbar-thumb {
   background-color: #c1c1c1;
   border-radius: 4px;
 }
 
-.discipline-list::-webkit-scrollbar-thumb:hover {
+.session-list::-webkit-scrollbar-thumb:hover {
   background-color: #888;
 }
 
 /* Estilos para os cards */
 .card {
-  width: 250px; /* Mantém a largura compacta */
-  min-height: 150px; /* Reduz a altura mínima */
-  max-height: 300px; /* Limita a altura máxima */
-  background-color: #fff;
-  border: 1px solid #ddd; /* Borda suave */
-  border-radius: 8px; /* Arredondamento dos cantos */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra leve */
+  width: 250px; /* Largura fixa */
+  min-height: 150px; /* Altura mínima */
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden; /* Impede que o conteúdo extra extrapole */
+  justify-content: space-between; /* Garante que o conteúdo ocupe todo o espaço disponível */
 }
 
 .card:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra mais intensa no hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo para o conteúdo do card */
 .card-content {
   padding: 15px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
 }
 
 .card-title {
   font-size: 1.1rem;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   color: #333;
+  word-wrap: break-word; /* Permite que o título quebre em várias linhas, se necessário */
 }
 
 .card-description {
   font-size: 0.9rem;
   color: #666;
-  flex-grow: 1;
-  overflow: hidden;
-  text-overflow: ellipsis; /* Adiciona '...' para texto muito longo */
-  white-space: nowrap; /* Impede que o texto quebre linha */
-}
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background-color: #fafafa;
-}
-
-/* Estilo para o título das disciplinas */
-.discipline-section h5 {
-  margin-bottom: 10px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-  color: #333;
-}
-
-/* Botão de nova sessão estilizado */
-.add_session_text {
-  color: #666;
-  font-weight: bold;
-  margin-top: 8px;
-  text-align: center;
+  word-wrap: break-word; /* Permite que a descrição quebre em várias linhas, se necessário */
+  white-space: normal; /* Permite que o texto use múltiplas linhas */
+  overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o card */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
+  -webkit-box-orient: vertical;
 }
 
 /* Modal */
-.dialog-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: center;
+.MuiDialogContent-root {
+  background-color: #f0f0f0;
 }
 
-.dialog-content {
-  padding: 20px;
+.MuiDialogActions-root {
+  background-color: #f0f0f0;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 1024px) {
+  .card {
+    width: 48%; /* Ajusta o tamanho dos cards para 2 colunas */
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    width: 100%; /* Em telas pequenas, cards ocupam toda a largura */
+  }
 }

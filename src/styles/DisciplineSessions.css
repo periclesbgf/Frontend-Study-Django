@@ -2,7 +2,8 @@
 .discipline-sessions-container {
   display: flex;
   height: 100vh;
-  background-color: #2c2f33; /* Fundo do container */
+  background-color: hsl(214, 7%, 19%); /* Fundo do container */
+  width: 100vh;
 }
 
 .discipline-sessions-content {
@@ -10,7 +11,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  background-color: #36393f;
+  background-color: #444;
   margin-left: 250px; /* Afasta do sidebar */
   overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura */
   overflow-x: hidden; /* Impede rolagem horizontal */

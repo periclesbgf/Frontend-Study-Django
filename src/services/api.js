@@ -1,3 +1,5 @@
+// src/services/api.js
+
 import axios from 'axios';
 
 // Set your backend base URL
@@ -37,9 +39,9 @@ export const registerUser = async (nome, email, senha, tipo_usuario, special_cod
 };
 
 export const recoverPassword = async (email) => {
-    const response = await axios.post('/api/recover-password', { email });
-    return response.data;
-  };
+  const response = await axios.post('/api/recover-password', { email });
+  return response.data;
+};
 
 // Function for user login
 export const loginUser = async (email, password) => {
@@ -144,7 +146,7 @@ export const uploadFile = async (question, code, file) => {
 
 // Get all study sessions
 export const getStudySessions = async () => {
-  const token = getAuthToken(); 
+  const token = getAuthToken();
   try {
     const response = await axios.get(`${API_BASE_URL}/study_sessions`, {
       headers: {
@@ -158,15 +160,34 @@ export const getStudySessions = async () => {
 };
 
 // Create a new study session
-export const createStudySession = async (disciplineName) => {
+export const createStudySession = async (disciplineName, subject) => {
   const token = getAuthToken();
   try {
-    const response = await axios.post(`${API_BASE_URL}/study_sessions`, { discipline_name: disciplineName }, {
+    const response = await axios.post(
+      `${API_BASE_URL}/study_sessions`,
+      { discipline_name: disciplineName, assunto: subject },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data.new_session;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+// Função para obter uma sessão de estudo específica pelo ID
+export const getStudySessionById = async (sessionId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${API_BASE_URL}/study_sessions/session/${sessionId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data.new_session;
+    return response.data; // Retorna os dados da sessão de estudo
   } catch (error) {
     handleAuthError(error);
   }
@@ -224,7 +245,7 @@ export const uploadDisciplinePDF = async (file) => {
 export const getCalendarEvents = async () => {
   const token = getAuthToken();
   try {
-    const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/events`, {
+    const response = await axios.get(`${API_BASE_URL}/calendar/events`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -251,7 +272,7 @@ export const createCalendarEvent = async ({ title, description, start_time, end_
 
   try {
     const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/calendar/events`,
+      `${API_BASE_URL}/calendar/events`,
       {
         title,
         description,
@@ -277,7 +298,7 @@ export const updateCalendarEvent = async (eventId, { title, description, start_t
 
   try {
     const response = await axios.put(
-      `${process.env.REACT_APP_API_URL}/calendar/events/${eventId}`,
+      `${API_BASE_URL}/calendar/events/${eventId}`,
       { title, description, start_time, end_time, location },
       {
         headers: {
@@ -292,14 +313,13 @@ export const updateCalendarEvent = async (eventId, { title, description, start_t
   }
 };
 
-
 // Função para deletar um evento no calendário
 export const deleteCalendarEvent = async (eventId) => {
   const token = getAuthToken();
 
   try {
     const response = await axios.delete(
-      `${process.env.REACT_APP_API_URL}/calendar/events/${eventId}`,
+      `${API_BASE_URL}/calendar/events/${eventId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -397,17 +417,16 @@ export const getAllEducators = async () => {
   }
 };
 
-// Função para buscar sessões de estudo por disciplina
 export const getStudySessionFromDiscipline = async (disciplineName) => {
   const token = getAuthToken();
   try {
-    const response = await axios.get(`${API_BASE_URL}/study_sessions/discipline`, {
+    const response = await axios.get(`${API_BASE_URL}/study_sessions/${disciplineName}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      params: { discipline_name: disciplineName },
     });
-    return response.data;
+    // Retorna apenas o array de sessões de estudo
+    return response.data.study_sessions;
   } catch (error) {
     handleAuthError(error);
   }

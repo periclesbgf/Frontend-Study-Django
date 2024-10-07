@@ -1,3 +1,4 @@
+// src/AppRoutes.js
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/Home';
 import RegisterStudent from './components/RegisterStudent';
@@ -5,43 +6,92 @@ import RegisterTeacher from './components/RegisterTeacher';
 import Login from './components/Login';
 import HomeStudent from './components/HomeStudent';
 import StudySessions from './components/StudySessions';
-import StudySession from './components/StudySession';
-import Workspace from './components/Workspace';
+import StudySession from './components/StudySession'; // Importação do componente
 import PrivateRoute from './components/PrivateRoute';
+import DisciplineSessions from './components/DisciplineSessions';
 import Dashboard from './components/Dashboard';
-import DisciplineSessions from './components/DisciplineSessions'; // Importando a página de Discipline Sessions
+import Workspace from './components/Workspace';
+import NotFound from './components/NotFound'; // Página de rota não encontrada
+import { StudySessionsProvider } from './contexts/StudySessionsContext';
 
 const AppRoutes = () => (
   <Router>
-    <Routes>
-      {/* Página inicial */}
-      <Route path="/" element={<Home />} />
+    <StudySessionsProvider>
+      <Routes>
+        {/* Página inicial */}
+        <Route path="/" element={<Home />} />
 
-      {/* Rotas de registro */}
-      <Route path="/register-student" element={<RegisterStudent />} />
-      <Route path="/register-teacher" element={<RegisterTeacher />} />
+        {/* Rotas de registro */}
+        <Route path="/register-student" element={<RegisterStudent />} />
+        <Route path="/register-teacher" element={<RegisterTeacher />} />
 
-      {/* Login */}
-      <Route path="/login" element={<Login />} />
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
 
-      {/* Home do estudante */}
-      <Route path="/home-student" element={<PrivateRoute><HomeStudent /></PrivateRoute>} />
+        {/* Home do estudante */}
+        <Route
+          path="/home-student"
+          element={
+            <PrivateRoute>
+              <HomeStudent />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Discipline Sessions: Exibe os cards de disciplinas */}
-      <Route path="/discipline_sessions" element={<PrivateRoute><DisciplineSessions /></PrivateRoute>} />
+        {/* Discipline Sessions: Exibe os cards de disciplinas */}
+        <Route
+          path="/discipline_sessions"
+          element={
+            <PrivateRoute>
+              <DisciplineSessions />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Study Sessions: Exibe as sessões de estudo de uma disciplina específica */}
-      <Route path="/study_sessions/:disciplineId" element={<PrivateRoute><StudySessions /></PrivateRoute>} />
+        {/* Study Sessions: Exibe as sessões de estudo de uma disciplina específica */}
+        <Route
+          path="/study_sessions/:disciplineName"
+          element={
+            <PrivateRoute>
+              <StudySessions />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Study Session: Exibe uma sessão de estudo específica dentro de uma disciplina */}
-      <Route path="/study_sessions/:disciplineId/:sessionId" element={<PrivateRoute><StudySession /></PrivateRoute>} />
+        {/* Study Session: Exibe uma sessão de estudo específica dentro de uma disciplina */}
+        <Route
+          path="/study_sessions/:disciplineName/:sessionId"
+          element={
+            <PrivateRoute>
+              <StudySession />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Dashboard */}
-      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        {/* Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Workspace */}
-      <Route path="/workspace" element={<PrivateRoute><Workspace /></PrivateRoute>} />
-    </Routes>
+        {/* Workspace */}
+        <Route
+          path="/workspace"
+          element={
+            <PrivateRoute>
+              <Workspace />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Página 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </StudySessionsProvider>
   </Router>
 );
 
