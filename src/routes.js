@@ -1,4 +1,5 @@
 // src/AppRoutes.js
+
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/Home';
 import RegisterStudent from './components/RegisterStudent';
@@ -6,12 +7,12 @@ import RegisterTeacher from './components/RegisterTeacher';
 import Login from './components/Login';
 import HomeStudent from './components/HomeStudent';
 import StudySessions from './components/StudySessions';
-import StudySession from './components/StudySession'; // Importação do componente
+import ChatPage from './components/ChatPage'; // Certifique-se de importar o ChatPage
 import PrivateRoute from './components/PrivateRoute';
 import DisciplineSessions from './components/DisciplineSessions';
 import Dashboard from './components/Dashboard';
 import Workspace from './components/Workspace';
-import NotFound from './components/NotFound'; // Página de rota não encontrada
+import NotFound from './components/NotFound';
 import { StudySessionsProvider } from './contexts/StudySessionsContext';
 
 const AppRoutes = () => (
@@ -58,12 +59,12 @@ const AppRoutes = () => (
           }
         />
 
-        {/* Study Session: Exibe uma sessão de estudo específica dentro de uma disciplina */}
+        {/* ChatPage: Exibe o chat de uma sessão de estudo específica */}
         <Route
           path="/study_sessions/:disciplineId/:sessionId"
           element={
             <PrivateRoute>
-              <StudySession />
+              <ChatPage />
             </PrivateRoute>
           }
         />

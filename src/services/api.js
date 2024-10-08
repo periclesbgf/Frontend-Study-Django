@@ -178,7 +178,6 @@ export const createStudySession = async (disciplineName, subject) => {
   }
 };
 
-// Função para obter uma sessão de estudo específica pelo ID
 export const getStudySessionById = async (sessionId) => {
   const token = getAuthToken();
   try {
@@ -187,7 +186,7 @@ export const getStudySessionById = async (sessionId) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data; // Retorna os dados da sessão de estudo
+    return response.data.study_session;
   } catch (error) {
     handleAuthError(error);
   }

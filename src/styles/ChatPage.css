@@ -8,10 +8,13 @@
   background-color: #333;
   padding: 0;
   box-sizing: border-box;
-  width: 100vh; /* Ajustar para ocupar a largura total */
+  width: auto; /* Ajustar para ocupar a largura total */
+  min-width: 90vh;
   overflow: hidden; /* Prevenir rolagem no contêiner principal */
 }
-
+.chat-page-content {
+  margin-left: 200px; /* Adicione esta linha */
+}
 /* O cabeçalho do chat */
 .chat-header {
   text-align: center;
