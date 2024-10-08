@@ -12,7 +12,7 @@ import '../styles/StudySessions.css';
 import { getStudySessionFromDiscipline } from '../services/api';
 
 const StudySessions = () => {
-  const { disciplineName } = useParams();
+  const { disciplineId } = useParams(); // Agora usando disciplineId
   const navigate = useNavigate();
 
   const [sessions, setSessions] = useState([]);
@@ -22,21 +22,21 @@ const StudySessions = () => {
   const loadStudySessions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await getStudySessionFromDiscipline(disciplineName);
+      const response = await getStudySessionFromDiscipline(disciplineId);
       console.log('Dados das sessões:', response); // Para depuração
 
       if (response && response.study_sessions && response.study_sessions.length > 0) {
         setSessions(response.study_sessions);
       } else {
         console.error('Nenhuma sessão de estudo encontrada para esta disciplina.');
-        setSessions([]); // Certifique-se de limpar o estado se não houver sessões
+        setSessions([]); // Limpa o estado se não houver sessões
       }
     } catch (error) {
       console.error('Erro ao buscar sessões de estudo:', error);
     } finally {
       setLoading(false);
     }
-  }, [disciplineName]);
+  }, [disciplineId]);
 
   useEffect(() => {
     loadStudySessions();
@@ -44,7 +44,7 @@ const StudySessions = () => {
 
   // Função para lidar com o clique na sessão de estudo
   const handleSessionClick = (sessionId) => {
-    navigate(`/study_sessions/${encodeURIComponent(disciplineName)}/${sessionId}`);
+    navigate(`/study_sessions/${disciplineId}/${sessionId}`);
   };
 
   return (
@@ -52,7 +52,7 @@ const StudySessions = () => {
       <Sidebar />
       <div className="study-sessions-content">
         <Typography variant="h3" align="center" gutterBottom>
-          Sessões de Estudo - {decodeURIComponent(disciplineName)}
+          Sessões de Estudo - Disciplina {disciplineId}
         </Typography>
 
         <div className="session-list">

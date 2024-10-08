@@ -50,7 +50,7 @@ const AppRoutes = () => (
 
         {/* Study Sessions: Exibe as sessões de estudo de uma disciplina específica */}
         <Route
-          path="/study_sessions/:disciplineName"
+          path="/study_sessions/:disciplineId"
           element={
             <PrivateRoute>
               <StudySessions />
@@ -60,7 +60,7 @@ const AppRoutes = () => (
 
         {/* Study Session: Exibe uma sessão de estudo específica dentro de uma disciplina */}
         <Route
-          path="/study_sessions/:disciplineName/:sessionId"
+          path="/study_sessions/:disciplineId/:sessionId"
           element={
             <PrivateRoute>
               <StudySession />

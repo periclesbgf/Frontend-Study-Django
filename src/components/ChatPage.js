@@ -1,6 +1,7 @@
-// ChatPage.js
+// src/components/ChatPage.js
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom'; // Importar useParams
 import { Box, Button, TextField, Typography, Avatar, ListItemAvatar, ListItem } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { sendPrompt } from '../services/api';
@@ -8,8 +9,10 @@ import '../styles/ChatPage.css';
 
 // Importando a imagem do robô
 import BotImage from '../assets/output_image.png';
+import Sidebar from './Sidebar'; // Opcional: Se você quiser incluir o sidebar
 
-const ChatPage = ({ sessionId }) => {
+const ChatPage = () => {
+  const { sessionId, disciplineId } = useParams(); // Obter sessionId e disciplineId da URL
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Bem-vindo à sessão ${sessionId}! Como posso ajudar você hoje?` }
   ]);
@@ -51,72 +54,77 @@ const ChatPage = ({ sessionId }) => {
   };
 
   return (
-    <Box className="chat-container">
-      <Typography variant="h5" className="chat-header">
-        Chat da Sessão {sessionId}
-      </Typography>
+    <div className="chat-page-container">
+      <Sidebar /> {/* Opcional: Incluir o sidebar se desejar */}
+      <div className="chat-page-content">
+        <Box className="chat-container">
+          <Typography variant="h5" className="chat-header">
+            Chat da Sessão {sessionId} - Disciplina {disciplineId}
+          </Typography>
 
-      <Box className="chat-messages">
-        {messages.map((msg, index) => (
-          <ListItem
-            key={index}
-            className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
-            sx={{ 
-              display: 'flex',
-              justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              alignItems: 'flex-start',
-              padding: 0 // Remove padding extra no ListItem
-            }}
-          >
-            {msg.role === 'assistant' && (
-              <ListItemAvatar>
-                <Avatar sx={{ width: 50, height: 50 }}  src={BotImage} alt="Assistente" />
-              </ListItemAvatar>
-            )}
-            <Box
-              sx={{
-                backgroundColor: msg.role === 'user' ? '#000' : '#e0e0e0',
-                color: msg.role === 'user' ? '#fff' : '#000',
-                padding: '10px',
-                borderRadius: '10px',
-                maxWidth: '90%',  // Limitar a largura máxima da mensagem
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word',
-                whiteSpace: 'pre-wrap',
-                fontSize: '16px',
-                marginLeft: msg.role === 'user' ? 'auto' : '0', // Mover mensagens do usuário para a direita
-                marginRight: msg.role === 'user' ? '0' : 'auto' // Mover mensagens do bot para a esquerda
-              }}
+          <Box className="chat-messages">
+            {messages.map((msg, index) => (
+              <ListItem
+                key={index}
+                className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
+                sx={{ 
+                  display: 'flex',
+                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  alignItems: 'flex-start',
+                  padding: 0 // Remove padding extra no ListItem
+                }}
+              >
+                {msg.role === 'assistant' && (
+                  <ListItemAvatar>
+                    <Avatar sx={{ width: 50, height: 50 }} src={BotImage} alt="Assistente" />
+                  </ListItemAvatar>
+                )}
+                <Box
+                  sx={{
+                    backgroundColor: msg.role === 'user' ? '#000' : '#e0e0e0',
+                    color: msg.role === 'user' ? '#fff' : '#000',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    maxWidth: '90%',  // Limitar a largura máxima da mensagem
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '16px',
+                    marginLeft: msg.role === 'user' ? 'auto' : '0', // Mover mensagens do usuário para a direita
+                    marginRight: msg.role === 'user' ? '0' : 'auto' // Mover mensagens do bot para a esquerda
+                  }}
+                >
+                  {msg.content}
+                </Box>
+              </ListItem>
+            ))}
+            <div ref={messagesEndRef} />
+          </Box>
+
+          <Box className="chat-input-container">
+            <TextField
+              variant="outlined"
+              placeholder="Digite uma mensagem..."
+              fullWidth
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="chat-input"
+            />
+            <Button
+              type="button"
+              variant="contained"
+              color="primary"
+              className="chat-send-button"
+              onClick={handleSendMessage}
             >
-              {msg.content}
-            </Box>
-          </ListItem>
-        ))}
-        <div ref={messagesEndRef} />
-      </Box>
-
-      <Box className="chat-input-container">
-        <TextField
-          variant="outlined"
-          placeholder="Digite uma mensagem..."
-          fullWidth
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="chat-input"
-        />
-        <Button
-          type="button"
-          variant="contained"
-          color="primary"
-          className="chat-send-button"
-          onClick={handleSendMessage}
-        >
-          <SendIcon />
-        </Button>
-      </Box>
-    </Box>
+              <SendIcon />
+            </Button>
+          </Box>
+        </Box>
+      </div>
+    </div>
   );
 };
 

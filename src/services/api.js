@@ -417,16 +417,15 @@ export const getAllEducators = async () => {
   }
 };
 
-export const getStudySessionFromDiscipline = async (disciplineName) => {
+export const getStudySessionFromDiscipline = async (disciplineId) => {
   const token = getAuthToken();
   try {
-    const response = await axios.get(`${API_BASE_URL}/study_sessions/${disciplineName}`, {
+    const response = await axios.get(`${API_BASE_URL}/study_sessions/discipline/${disciplineId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Retorna apenas o array de sessões de estudo
-    return response.data.study_sessions;
+    return response.data.study_sessions; // Retorna o objeto completo
   } catch (error) {
     handleAuthError(error);
   }

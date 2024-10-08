@@ -1,4 +1,5 @@
 // src/components/DisciplineSessions.js
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -105,8 +106,8 @@ const DisciplineSessions = () => {
   };
 
   // Função para lidar com o clique na disciplina
-  const handleDisciplineClick = (disciplineName) => {
-    navigate(`/study_sessions/${encodeURIComponent(disciplineName)}`);
+  const handleDisciplineClick = (disciplineId) => {
+    navigate(`/study_sessions/${disciplineId}`);
   };
 
   // Função para limpar o professor selecionado
@@ -143,7 +144,7 @@ const DisciplineSessions = () => {
               <Card
                 key={discipline.IdCurso}
                 className="card"
-                onClick={() => handleDisciplineClick(discipline.NomeCurso)}
+                onClick={() => handleDisciplineClick(discipline.IdCurso)}
               >
                 <CardContent className="card-content">
                   <Typography className="card-title">{discipline.NomeCurso}</Typography>
