@@ -1,4 +1,4 @@
-/* ChatPage.css */
+/* src/styles/ChatPage.css */
 
 /* O contêiner do chat deve ocupar toda a altura e a largura disponíveis */
 .chat-container {
@@ -12,9 +12,11 @@
   min-width: 90vh;
   overflow: hidden; /* Prevenir rolagem no contêiner principal */
 }
+
 .chat-page-content {
-  margin-left: 200px; /* Adicione esta linha */
+  margin-left: 250px; /* Ajuste para a largura da sidebar */
 }
+
 /* O cabeçalho do chat */
 .chat-header {
   text-align: center;
@@ -58,7 +60,7 @@
 
 /* Mensagens do usuário alinhadas à direita */
 .chat-message.user {
-  background-color: #000;
+  background-color: #1976d2;
   color: #fff;
   align-self: flex-end; /* Alinha as mensagens à direita */
   width: auto; /* Ajusta a largura automaticamente */
@@ -67,17 +69,41 @@
 /* Mensagens do bot alinhadas à esquerda */
 .chat-message.assistant {
   background-color: #e0e0e0;
-  width: auto;
-  color: #000;
+  color: #000; /* Garante que o texto seja visível no fundo claro */
   align-self: flex-start; /* Alinha as mensagens à esquerda */
   margin-right: auto; /* Faz com que o conteúdo vá para a esquerda */
-  max-width: 100%;
+  max-width: 70%;
+  width: auto;
+}
+
+/* Estilo para blocos de código nas mensagens do bot */
+.chat-message pre {
+  background-color: #282c34; /* Fundo escuro para o código */
+  color: #ffffff; /* Cor do texto para o código */
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-size: 14px; /* Tamanho menor para o código */
+  margin: 10px 0; /* Espaço ao redor do bloco de código */
+}
+
+.chat-message code {
+  background-color: #f5f5f5; /* Fundo claro para inline code */
+  color: #000; /* Cor do texto do código */
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+/* Mensagens inline sem código também precisam de contraste */
+.chat-message.assistant p {
+  color: #000; /* Garante que o texto seja visível em fundo claro */
 }
 
 /* O campo de entrada e botão de envio */
 .chat-input-container {
   display: flex;
-  padding:00px;
+  padding: 10px 20px;
   background-color: #444;
   border-top: 1px solid #555;
   box-sizing: border-box;

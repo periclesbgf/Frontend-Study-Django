@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Set your backend base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL;
-const API_PROMPT_CODE = process.env.REACT_APP_API_CODE;
+// const API_PROMPT_CODE = process.env.REACT_APP_API_CODE; // Removido pois não está sendo usado
 
 // Helper function to get token from localStorage
 const getAuthToken = () => {
@@ -57,22 +57,52 @@ export const loginUser = async (email, password) => {
 };
 
 // Function to send a prompt to the chatbot (Protected route)
-export const sendPrompt = async (prompt) => {
-  const token = getAuthToken();  // Obtém o token do localStorage
+export const sendPrompt = async (sessionId, prompt, disciplineId) => {
+  const token = getAuthToken();
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/prompt`,
-      { question: prompt, code: API_PROMPT_CODE },  // Passa a pergunta e o código
+      `${API_BASE_URL}/chat`,
+      {
+        session_id: sessionId,
+        message: prompt,
+        discipline_id: disciplineId,  // Inclui discipline_id
+      },
       {
         headers: {
-          Authorization: `Bearer ${token}`,  // Anexa o JWT token
+          Authorization: `Bearer ${token}`,
         },
       }
     );
     return response.data;
   } catch (error) {
-    // Se o token expirar ou houver erro de autenticação
     console.error('Error in sendPrompt:', error);
+    throw error;
+  }
+};
+
+// Function to get chat history with pagination (Protected route)
+export const getChatHistory = async (sessionId, limit = 10, before = null) => {
+  const token = getAuthToken();
+  try {
+    const params = {
+      limit: limit,
+    };
+    if (before) {
+      params.before = before;
+    }
+
+    const response = await axios.get(
+      `${API_BASE_URL}/chat_history/${sessionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: params,
+      }
+    );
+    return response.data.messages;
+  } catch (error) {
+    console.error('Error in getChatHistory:', error);
     throw error;
   }
 };
@@ -402,7 +432,7 @@ export const deleteDiscipline = async (disciplineId) => {
 };
 
 export const getAllEducators = async () => {
-  const token = localStorage.getItem('accessToken'); // Obtém o token do armazenamento local
+  const token = getAuthToken(); // Obtém o token do armazenamento local
   try {
     const response = await axios.get(`${API_BASE_URL}/educators`, {
       headers: {

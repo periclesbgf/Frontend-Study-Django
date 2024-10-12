@@ -1,7 +1,10 @@
 // src/components/ChatPage.js
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'; // Importa o SyntaxHighlighter
+import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism'; // Estilo para realce de sintaxe
 import {
   Box,
   Button,
@@ -10,9 +13,14 @@ import {
   Avatar,
   ListItemAvatar,
   ListItem,
+  CircularProgress,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import { sendPrompt, getStudySessionById } from '../services/api';
+import {
+  sendPrompt,
+  getStudySessionById,
+  getChatHistory,
+} from '../services/api';
 import '../styles/ChatPage.css';
 
 import BotImage from '../assets/output_image.png';
@@ -23,26 +31,40 @@ const ChatPage = () => {
   const [sessionDetails, setSessionDetails] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [earliestTimestamp, setEarliestTimestamp] = useState(null);
+  const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Função para buscar os detalhes da sessão
+  // Função para buscar os detalhes da sessão e o histórico do chat
   const loadSessionDetails = async () => {
     try {
       const session = await getStudySessionById(sessionId);
       setSessionDetails(session);
 
-      // Se houver um histórico de conversa, carregar as mensagens
-      if (session.HistoricoConversa && session.HistoricoConversa.length > 0) {
-        setMessages(session.HistoricoConversa);
+      // Carrega o histórico do chat inicial (últimas 10 mensagens)
+      const initialMessages = await getChatHistory(sessionId, 10, null);
+
+      if (initialMessages && initialMessages.length > 0) {
+        setMessages(initialMessages);
+        setEarliestTimestamp(initialMessages[0].timestamp); // Primeiro item é o mais antigo
+        if (initialMessages.length < 10) {
+          setHasMore(false);
+        }
       } else {
-        // Mensagem inicial
-        setMessages([
+        // Mensagem inicial se não houver histórico
+        const welcomeMessage = [
           {
             role: 'assistant',
             content: `Bem-vindo à sessão ${sessionId}! Como posso ajudar você hoje?`,
           },
-        ]);
+        ];
+        setMessages(welcomeMessage);
+        setHasMore(false);
       }
+      setIsInitialLoad(false);
     } catch (error) {
       console.error('Erro ao carregar os detalhes da sessão:', error);
     }
@@ -50,8 +72,10 @@ const ChatPage = () => {
 
   useEffect(() => {
     loadSessionDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
+  // Função para enviar mensagem
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
@@ -60,12 +84,11 @@ const ChatPage = () => {
 
     try {
       setInput('');
-      const response = await sendPrompt(input);
+      const response = await sendPrompt(sessionId, input, disciplineId);
       const botMessage = { role: 'assistant', content: response.response };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
-
-      // Opcional: Atualizar o histórico da conversa no backend
-      // await updateStudySessionHistory(sessionId, [...messages, userMessage, botMessage]);
+      // Scroll para o final após enviar uma mensagem
+      scrollToBottom();
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
       const errorMessage = {
@@ -73,6 +96,8 @@ const ChatPage = () => {
         content: 'Ocorreu um erro. Por favor, tente novamente mais tarde.',
       };
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      // Scroll para o final após erro
+      scrollToBottom();
     }
   };
 
@@ -82,9 +107,53 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (isInitialLoad) {
+      // Durante o carregamento inicial, o scroll deve estar no final
+      scrollToBottom();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, isInitialLoad]);
 
+  // Função para carregar mais mensagens
+  const loadMoreMessages = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const olderMessages = await getChatHistory(sessionId, 10, earliestTimestamp);
+
+      if (olderMessages && olderMessages.length > 0) {
+        setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
+        setEarliestTimestamp(olderMessages[0].timestamp);
+        if (olderMessages.length < 10) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar mais mensagens:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, sessionId, earliestTimestamp]);
+
+  // Detectar quando o usuário rola para o topo para carregar mais mensagens
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container || loading || !hasMore) return;
+
+    if (container.scrollTop === 0) {
+      loadMoreMessages();
+    }
+  };
+
+  // Função para detectar rolagem automática após carregar mensagens
+  const handleLoadMore = () => {
+    loadMoreMessages();
+  };
+
+  // Definição da função handleKeyDown
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -92,9 +161,36 @@ const ChatPage = () => {
     }
   };
 
+  // Função para renderizar Markdown e realçar código
+  const renderMessageContent = (content) => (
+    <ReactMarkdown
+      components={{
+        code({ node, inline, className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || '');
+          return !inline && match ? (
+            <SyntaxHighlighter
+              style={materialDark}
+              language={match[1]}
+              PreTag="div"
+              {...props}
+            >
+              {String(children).replace(/\n$/, '')}
+            </SyntaxHighlighter>
+          ) : (
+            <code className={className} {...props}>
+              {children}
+            </code>
+          );
+        },
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+
   return (
     <div className="chat-page-container">
-      <Sidebar className="sidebar" /> {/* Adicione esta classe */}
+      <Sidebar className="sidebar" />
       <div className="chat-page-content">
         <Box className="chat-container">
           <Typography variant="h5" className="chat-header">
@@ -111,7 +207,27 @@ const ChatPage = () => {
             </Box>
           )}
 
-          <Box className="chat-messages">
+          <Box
+            className="chat-messages"
+            ref={messagesContainerRef}
+            onScroll={handleScroll}
+            sx={{
+              overflowY: 'auto',
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {hasMore && (
+              <Box sx={{ textAlign: 'center', padding: '10px' }}>
+                {loading && <CircularProgress size={24} />}
+                {!loading && (
+                  <Button onClick={loadMoreMessages} disabled={loading}>
+                    Carregar mais
+                  </Button>
+                )}
+              </Box>
+            )}
             {messages.map((msg, index) => (
               <ListItem
                 key={index}
@@ -123,13 +239,13 @@ const ChatPage = () => {
                   justifyContent:
                     msg.role === 'user' ? 'flex-end' : 'flex-start',
                   alignItems: 'flex-start',
-                  padding: 0,
+                  padding: '8px 0',
                 }}
               >
                 {msg.role === 'assistant' && (
                   <ListItemAvatar>
                     <Avatar
-                      sx={{ width: 50, height: 50 }}
+                      sx={{ width: 40, height: 40 }}
                       src={BotImage}
                       alt="Assistente"
                     />
@@ -137,11 +253,12 @@ const ChatPage = () => {
                 )}
                 <Box
                   sx={{
-                    backgroundColor: msg.role === 'user' ? '#000' : '#e0e0e0',
+                    backgroundColor:
+                      msg.role === 'user' ? '#1976d2' : '#e0e0e0',
                     color: msg.role === 'user' ? '#fff' : '#000',
-                    padding: '10px',
-                    borderRadius: '10px',
-                    maxWidth: '90%',
+                    padding: '10px 15px',
+                    borderRadius: '15px',
+                    maxWidth: '80%',
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word',
                     wordBreak: 'break-word',
@@ -151,14 +268,14 @@ const ChatPage = () => {
                     marginRight: msg.role === 'user' ? '0' : 'auto',
                   }}
                 >
-                  {msg.content}
+                  {renderMessageContent(msg.content)}
                 </Box>
               </ListItem>
             ))}
             <div ref={messagesEndRef} />
           </Box>
 
-          <Box className="chat-input-container">
+          <Box className="chat-input-container" sx={{ display: 'flex', padding: '10px' }}>
             <TextField
               variant="outlined"
               placeholder="Digite uma mensagem..."
@@ -174,6 +291,7 @@ const ChatPage = () => {
               color="primary"
               className="chat-send-button"
               onClick={handleSendMessage}
+              sx={{ marginLeft: '10px' }}
             >
               <SendIcon />
             </Button>
