@@ -1,5 +1,3 @@
-// src/components/ChatPage.js
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -65,6 +63,9 @@ const ChatPage = () => {
         setHasMore(false);
       }
       setIsInitialLoad(false);
+
+      // Rolar para o final após carregar as mensagens iniciais
+      scrollToBottom();
     } catch (error) {
       console.error('Erro ao carregar os detalhes da sessão:', error);
     }
@@ -103,7 +104,9 @@ const ChatPage = () => {
 
   // Função para rolar até o final quando novas mensagens são adicionadas
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
