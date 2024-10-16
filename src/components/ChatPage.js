@@ -1,3 +1,5 @@
+// app/frontend/src/components/ChatPage.js
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -12,8 +14,10 @@ import {
   ListItemAvatar,
   ListItem,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import {
   sendPrompt,
   getStudySessionById,
@@ -29,12 +33,14 @@ const ChatPage = () => {
   const [sessionDetails, setSessionDetails] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [file, setFile] = useState(null); // Estado para armazenar o arquivo selecionado
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [earliestTimestamp, setEarliestTimestamp] = useState(null);
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null); // Referência para o input de arquivo
 
   // Função para buscar os detalhes da sessão e o histórico do chat
   const loadSessionDetails = async () => {
@@ -76,18 +82,24 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Função para enviar mensagem
+  // Função para enviar mensagem com opcionalmente um arquivo
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && !file) return; // Não faz nada se não houver mensagem ou arquivo
 
     const userMessage = { role: 'user', content: input };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     try {
-      setInput('');
-      const response = await sendPrompt(sessionId, input, disciplineId);
+      setLoading(true);
+      const response = await sendPrompt(sessionId, input, disciplineId, file);
       const botMessage = { role: 'assistant', content: response.response };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
+      // Resetar o estado do arquivo após envio
+      setFile(null);
+      // Resetar o valor do input de arquivo
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       // Scroll para o final após enviar uma mensagem
       scrollToBottom();
     } catch (err) {
@@ -99,6 +111,31 @@ const ChatPage = () => {
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
       // Scroll para o final após erro
       scrollToBottom();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para enviar arquivo
+  const handleFileUpload = async (event) => {
+    const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
+
+    // Opcional: Mostrar uma mensagem de que o upload está em andamento
+    const uploadingMessage = {
+      role: 'user',
+      content: `Uploading file: ${selectedFile.name}`,
+    };
+    setMessages((prevMessages) => [...prevMessages, uploadingMessage]);
+
+    // Armazena o arquivo no estado para enviar com a mensagem
+    setFile(selectedFile);
+  };
+
+  // Função para acionar o input de arquivo ao clicar no botão de anexo
+  const handleAttachClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -149,11 +186,6 @@ const ChatPage = () => {
     if (container.scrollTop === 0) {
       loadMoreMessages();
     }
-  };
-
-  // Função para detectar rolagem automática após carregar mensagens
-  const handleLoadMore = () => {
-    loadMoreMessages();
   };
 
   // Definição da função handleKeyDown
@@ -279,6 +311,24 @@ const ChatPage = () => {
           </Box>
 
           <Box className="chat-input-container" sx={{ display: 'flex', padding: '10px' }}>
+            {/* Botão de Anexo */}
+            <IconButton
+              color="primary"
+              component="span"
+              onClick={handleAttachClick}
+              sx={{ marginRight: '10px' }}
+            >
+              <AttachFileIcon />
+            </IconButton>
+            {/* Input de Arquivo Oculto */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileUpload}
+              accept=".jpg,.jpeg,.png,.pdf,.ppt,.pptx" // Tipos de arquivos permitidos
+            />
+            {/* Campo de Entrada de Texto */}
             <TextField
               variant="outlined"
               placeholder="Digite uma mensagem..."

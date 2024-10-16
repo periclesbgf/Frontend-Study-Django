@@ -4,7 +4,6 @@ import axios from 'axios';
 
 // Set your backend base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL;
-// const API_PROMPT_CODE = process.env.REACT_APP_API_CODE; // Removido pois não está sendo usado
 
 // Helper function to get token from localStorage
 const getAuthToken = () => {
@@ -56,27 +55,34 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// Function to send a prompt to the chatbot (Protected route)
-export const sendPrompt = async (sessionId, prompt, disciplineId) => {
+
+export const sendPrompt = async (sessionId, prompt, disciplineId, file = null) => {
   const token = getAuthToken();
   try {
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('discipline_id', disciplineId);
+    formData.append('message', prompt || '');
+
+    if (file) {
+      formData.append('file', file);
+    }
+
     const response = await axios.post(
       `${API_BASE_URL}/chat`,
-      {
-        session_id: sessionId,
-        message: prompt,
-        discipline_id: disciplineId,  // Inclui discipline_id
-      },
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
       }
     );
+
     return response.data;
   } catch (error) {
     console.error('Error in sendPrompt:', error);
-    throw error;
+    throw error.response ? error.response.data : new Error("Failed to send prompt");
   }
 };
 
@@ -141,6 +147,7 @@ export const sendRouteRequest = async (question, code, file = null) => {
       {
         headers: {
           Authorization: `Bearer ${token}`,  // Attach the JWT token
+          'Content-Type': 'multipart/form-data',
         },
       }
     );
@@ -151,20 +158,17 @@ export const sendRouteRequest = async (question, code, file = null) => {
 };
 
 // Function to upload a file (Protected route)
-export const uploadFile = async (question, code, file) => {
+// Agora aceita apenas o arquivo, pois o envio de mensagem está no sendPrompt
+export const uploadFile = async (formData) => {
   const token = getAuthToken();  // Get the token from localStorage
   try {
-    const formData = new FormData();
-    formData.append('question', question);
-    formData.append('code', code);
-    formData.append('file', file);
-
     const response = await axios.post(
       `${API_BASE_URL}/upload_file`,
       formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,  // Attach the JWT token
+          'Content-Type': 'multipart/form-data',
         },
       }
     );
@@ -431,6 +435,7 @@ export const deleteDiscipline = async (disciplineId) => {
   }
 };
 
+// GET all educators
 export const getAllEducators = async () => {
   const token = getAuthToken(); // Obtém o token do armazenamento local
   try {
@@ -446,6 +451,7 @@ export const getAllEducators = async () => {
   }
 };
 
+// GET study sessions by discipline
 export const getStudySessionFromDiscipline = async (disciplineId) => {
   const token = getAuthToken();
   try {
