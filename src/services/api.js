@@ -465,3 +465,36 @@ export const getStudySessionFromDiscipline = async (disciplineId) => {
     handleAuthError(error);
   }
 };
+
+export const getProfile = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/profiles`, {
+      headers: { Authorization: `Bearer ${getAuthToken()}` },
+    });
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
+export const updateProfile = async (profileData) => {
+  try {
+    const formattedProfileData = {
+      Percepcao: profileData.EstiloAprendizagem.Percepcao,
+      Entrada: profileData.EstiloAprendizagem.Entrada,
+      Processamento: profileData.EstiloAprendizagem.Processamento,
+      Entendimento: profileData.EstiloAprendizagem.Entendimento,
+    };
+
+    const response = await axios.put(
+      `${API_BASE_URL}/profiles`,
+      formattedProfileData,
+      {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};

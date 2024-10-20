@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faChartBar, faFolder, faSignOutAlt, faBriefcase } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faHome, 
+  faChartBar, 
+  faFolder, 
+  faSignOutAlt, 
+  faBriefcase, 
+  faUser 
+} from '@fortawesome/free-solid-svg-icons'; // Importando o ícone de usuário
 import '../styles/Sidebar.css';
 
 const Sidebar = ({ onToggle }) => {
@@ -30,13 +37,18 @@ const Sidebar = ({ onToggle }) => {
         <FontAwesomeIcon icon={faChartBar} className="icon" />
         {!isCollapsed && 'Dashboard'}
       </button>
-      <button onClick={() => navigate('/discipline_sessions')}> {/* Alterei a rota para discipline_sessions */}
+      <button onClick={() => navigate('/discipline_sessions')}>
         <FontAwesomeIcon icon={faFolder} className="icon" />
         {!isCollapsed && 'Discipline Sessions'}
       </button>
       <button onClick={() => navigate('/workspace')}>
         <FontAwesomeIcon icon={faBriefcase} className="icon" />
         {!isCollapsed && 'Workspace'}
+      </button>
+      {/* Novo botão para a página Perfil */}
+      <button onClick={() => navigate('/profile')}>
+        <FontAwesomeIcon icon={faUser} className="icon" />
+        {!isCollapsed && 'Profile'}
       </button>
       <hr />
       <button onClick={() => navigate('/login')}>

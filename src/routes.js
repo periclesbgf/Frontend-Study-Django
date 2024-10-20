@@ -13,6 +13,7 @@ import DisciplineSessions from './components/DisciplineSessions';
 import Dashboard from './components/Dashboard';
 import Workspace from './components/Workspace';
 import NotFound from './components/NotFound';
+import ProfilePage from './components/ProfilePage'; // Importando a página de perfil
 import { StudySessionsProvider } from './contexts/StudySessionsContext';
 
 const AppRoutes = () => (
@@ -85,6 +86,16 @@ const AppRoutes = () => (
           element={
             <PrivateRoute>
               <Workspace />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Página de Perfil */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <ProfilePage />
             </PrivateRoute>
           }
         />
