@@ -1,5 +1,3 @@
-// app/frontend/src/components/ChatPage.js
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -15,14 +13,11 @@ import {
   ListItem,
   CircularProgress,
   IconButton,
+  Chip,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import {
-  sendPrompt,
-  getStudySessionById,
-  getChatHistory,
-} from '../services/api';
+import { sendPrompt, getStudySessionById, getChatHistory } from '../services/api';
 import '../styles/ChatPage.css';
 
 import BotImage from '../assets/output_image.png';
@@ -48,20 +43,12 @@ const ChatPage = () => {
       setSessionDetails(session);
 
       const initialMessages = await getChatHistory(sessionId, 10, null);
-      if (initialMessages && initialMessages.length > 0) {
+      if (initialMessages.length > 0) {
         setMessages(initialMessages);
         setEarliestTimestamp(initialMessages[0].timestamp);
-        if (initialMessages.length < 10) {
-          setHasMore(false);
-        }
+        if (initialMessages.length < 10) setHasMore(false);
       } else {
-        const welcomeMessage = [
-          {
-            role: 'assistant',
-            content: `Bem-vindo à sessão ${sessionId}! Como posso ajudar você hoje?`,
-          },
-        ];
-        setMessages(welcomeMessage);
+        setMessages([{ role: 'assistant', content: `Bem-vindo à sessão ${sessionId}! Como posso ajudar você hoje?` }]);
         setHasMore(false);
       }
       setIsInitialLoad(false);
@@ -93,47 +80,35 @@ const ChatPage = () => {
       scrollToBottom();
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
-      const errorMessage = {
-        role: 'assistant',
-        content: 'Ocorreu um erro. Por favor, tente novamente mais tarde.',
-      };
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: 'Ocorreu um erro. Tente novamente mais tarde.' }]);
       scrollToBottom();
     } finally {
       setLoading(false);
-      setInput(''); // Limpa o campo de input após envio
+      setInput('');
     }
   };
 
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = (event) => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
-
-    const uploadingMessage = {
-      role: 'user',
-      content: `Uploading file: ${selectedFile.name}`,
-    };
-    setMessages((prevMessages) => [...prevMessages, uploadingMessage]);
-
     setFile(selectedFile);
   };
 
   const handleAttachClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    if (isInitialLoad) {
-      scrollToBottom();
-    }
+    if (isInitialLoad) scrollToBottom();
   }, [messages, isInitialLoad]);
 
   const loadMoreMessages = useCallback(async () => {
@@ -142,13 +117,10 @@ const ChatPage = () => {
     setLoading(true);
     try {
       const olderMessages = await getChatHistory(sessionId, 10, earliestTimestamp);
-
-      if (olderMessages && olderMessages.length > 0) {
+      if (olderMessages.length > 0) {
         setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
         setEarliestTimestamp(olderMessages[0].timestamp);
-        if (olderMessages.length < 10) {
-          setHasMore(false);
-        }
+        if (olderMessages.length < 10) setHasMore(false);
       } else {
         setHasMore(false);
       }
@@ -162,10 +134,7 @@ const ChatPage = () => {
   const handleScroll = () => {
     const container = messagesContainerRef.current;
     if (!container || loading || !hasMore) return;
-
-    if (container.scrollTop === 0) {
-      loadMoreMessages();
-    }
+    if (container.scrollTop === 0) loadMoreMessages();
   };
 
   const handleKeyDown = (event) => {
@@ -181,18 +150,11 @@ const ChatPage = () => {
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
           return !inline && match ? (
-            <SyntaxHighlighter
-              style={materialDark}
-              language={match[1]}
-              PreTag="div"
-              {...props}
-            >
+            <SyntaxHighlighter style={materialDark} language={match[1]} PreTag="div" {...props}>
               {String(children).replace(/\n$/, '')}
             </SyntaxHighlighter>
           ) : (
-            <code className={className} {...props}>
-              {children}
-            </code>
+            <code className={className} {...props}>{children}</code>
           );
         },
       }}
@@ -212,67 +174,24 @@ const ChatPage = () => {
 
           {sessionDetails && (
             <Box className="session-details">
-              <Typography variant="subtitle1">
-                Assunto: {sessionDetails.Assunto}
-              </Typography>
+              <Typography variant="subtitle1">Assunto: {sessionDetails.Assunto}</Typography>
             </Box>
           )}
 
-          <Box
-            className="chat-messages"
-            ref={messagesContainerRef}
-            onScroll={handleScroll}
-            sx={{
-              overflowY: 'auto',
-              flexGrow: 1,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
+          <Box className="chat-messages" ref={messagesContainerRef} onScroll={handleScroll} sx={{ overflowY: 'auto', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
             {hasMore && (
               <Box sx={{ textAlign: 'center', padding: '10px' }}>
-                {loading && <CircularProgress size={24} />}
-                {!loading && (
-                  <Button onClick={loadMoreMessages} disabled={loading}>
-                    Carregar mais
-                  </Button>
-                )}
+                {loading ? <CircularProgress size={24} /> : <Button onClick={loadMoreMessages}>Carregar mais</Button>}
               </Box>
             )}
             {messages.map((msg, index) => (
-              <ListItem
-                key={index}
-                className={`chat-message ${
-                  msg.role === 'user' ? 'user' : 'assistant'
-                }`}
-                sx={{
-                  display: 'flex',
-                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  alignItems: 'flex-start',
-                  padding: '8px 0',
-                }}
-              >
+              <ListItem key={index} className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}>
                 {msg.role === 'assistant' && (
                   <ListItemAvatar>
-                    <Avatar
-                      sx={{ width: 40, height: 40 }}
-                      src={BotImage}
-                      alt="Assistente"
-                    />
+                    <Avatar sx={{ width: 40, height: 40 }} src={BotImage} alt="Assistente" />
                   </ListItemAvatar>
                 )}
-                <Box
-                  sx={{
-                    backgroundColor: msg.role === 'user' ? '#1976d2' : '#e0e0e0',
-                    color: msg.role === 'user' ? '#fff' : '#000',
-                    padding: '10px 15px',
-                    borderRadius: '15px',
-                    maxWidth: '80%',
-                    wordWrap: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                    fontSize: '16px',
-                  }}
-                >
+                <Box sx={{ backgroundColor: msg.role === 'user' ? '#1976d2' : '#e0e0e0', color: msg.role === 'user' ? '#fff' : '#000', padding: '10px 15px', borderRadius: '15px', maxWidth: '80%', wordWrap: 'break-word', whiteSpace: 'pre-wrap', fontSize: '16px' }}>
                   {renderMessageContent(msg.content)}
                 </Box>
               </ListItem>
@@ -280,42 +199,34 @@ const ChatPage = () => {
             <div ref={messagesEndRef} />
           </Box>
 
-          <Box className="chat-input-container" sx={{ display: 'flex', padding: '10px' }}>
-            <IconButton
-              color="primary"
-              component="span"
-              onClick={handleAttachClick}
-              sx={{ marginRight: '10px' }}
-            >
-              <AttachFileIcon />
-            </IconButton>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileUpload}
-              accept=".jpg,.jpeg,.png,.pdf,.ppt,.pptx"
-            />
-            <TextField
-              variant="outlined"
-              placeholder="Digite uma mensagem..."
-              fullWidth
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="chat-input"
-              disabled={loading} // Desabilita o input durante o envio
-            />
-            <Button
-              type="button"
-              variant="contained"
-              color="primary"
-              onClick={handleSendMessage}
-              disabled={loading} // Desabilita o botão durante o envio
-              sx={{ marginLeft: '10px' }}
-            >
-              <SendIcon />
-            </Button>
+          <Box className="chat-input-container" sx={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
+            {file && (
+              <Chip
+                label={file.name}
+                onDelete={removeFile}
+                color="primary"
+                sx={{ marginBottom: '10px', textAlign: 'left' }}
+              />
+            )}
+            <Box sx={{ display: 'flex' }}>
+              <IconButton color="primary" onClick={handleAttachClick} sx={{ marginRight: '10px' }}>
+                <AttachFileIcon />
+              </IconButton>
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} accept=".jpg,.jpeg,.png,.pdf,.ppt,.pptx" />
+              <TextField
+                variant="outlined"
+                placeholder="Digite uma mensagem..."
+                fullWidth
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
+                sx={{ backgroundColor: '#fff', borderRadius: '8px' }}
+              />
+              <Button variant="contained" color="primary" onClick={handleSendMessage} disabled={loading} sx={{ marginLeft: '10px' }}>
+                <SendIcon />
+              </Button>
+            </Box>
           </Box>
         </Box>
       </div>
