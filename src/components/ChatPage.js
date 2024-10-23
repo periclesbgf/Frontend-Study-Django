@@ -80,7 +80,10 @@ const ChatPage = () => {
       scrollToBottom();
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
-      setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: 'Ocorreu um erro. Tente novamente mais tarde.' }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { role: 'assistant', content: 'Ocorreu um erro. Tente novamente mais tarde.' },
+      ]);
       scrollToBottom();
     } finally {
       setLoading(false);
@@ -154,7 +157,9 @@ const ChatPage = () => {
               {String(children).replace(/\n$/, '')}
             </SyntaxHighlighter>
           ) : (
-            <code className={className} {...props}>{children}</code>
+            <code className={className} {...props}>
+              {children}
+            </code>
           );
         },
       }}
@@ -178,20 +183,41 @@ const ChatPage = () => {
             </Box>
           )}
 
-          <Box className="chat-messages" ref={messagesContainerRef} onScroll={handleScroll} sx={{ overflowY: 'auto', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Box
+            className="chat-messages"
+            ref={messagesContainerRef}
+            onScroll={handleScroll}
+            sx={{ overflowY: 'auto', flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+          >
             {hasMore && (
               <Box sx={{ textAlign: 'center', padding: '10px' }}>
                 {loading ? <CircularProgress size={24} /> : <Button onClick={loadMoreMessages}>Carregar mais</Button>}
               </Box>
             )}
             {messages.map((msg, index) => (
-              <ListItem key={index} className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}>
+              <ListItem
+                key={index}
+                className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
+                sx={{ marginBottom: '5px' }} // Espaçamento ajustado aqui
+              >
                 {msg.role === 'assistant' && (
                   <ListItemAvatar>
                     <Avatar sx={{ width: 40, height: 40 }} src={BotImage} alt="Assistente" />
                   </ListItemAvatar>
                 )}
-                <Box sx={{ backgroundColor: msg.role === 'user' ? '#1976d2' : '#e0e0e0', color: msg.role === 'user' ? '#fff' : '#000', padding: '10px 15px', borderRadius: '15px', maxWidth: '80%', wordWrap: 'break-word', whiteSpace: 'pre-wrap', fontSize: '16px' }}>
+                <Box
+                  sx={{
+                    backgroundColor: msg.role === 'user' ? '#1976d2' : '#e0e0e0',
+                    color: msg.role === 'user' ? '#fff' : '#000',
+                    padding: '10px 15px',
+                    borderRadius: '15px',
+                    maxWidth: '80%',
+                    wordWrap: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '16px',
+                    lineHeight: '1.4',
+                  }}
+                >
                   {renderMessageContent(msg.content)}
                 </Box>
               </ListItem>
@@ -212,7 +238,7 @@ const ChatPage = () => {
               <IconButton color="primary" onClick={handleAttachClick} sx={{ marginRight: '10px' }}>
                 <AttachFileIcon />
               </IconButton>
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} accept=".jpg,.jpeg,.png,.pdf,.ppt,.pptx" />
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
               <TextField
                 variant="outlined"
                 placeholder="Digite uma mensagem..."

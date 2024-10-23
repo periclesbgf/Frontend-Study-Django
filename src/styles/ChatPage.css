@@ -155,3 +155,13 @@
 .chat-messages::-webkit-scrollbar-thumb:hover {
   background-color: #555;
 }
+/* Ajuste fino no espaçamento dos elementos de texto */
+.chat-message p,
+.chat-message h3,
+.chat-message ul,
+.chat-message li,
+.chat-message ol {
+  margin: 5px 0; /* Reduz o espaçamento vertical entre os elementos */
+  line-height: 1.5; /* Ajuste para melhorar a leitura */
+}
+
