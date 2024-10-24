@@ -193,22 +193,23 @@ export const getStudySessions = async () => {
   }
 };
 
-// Create a new study session
-export const createStudySession = async (disciplineName, subject) => {
+export const createStudySession = async (sessionData) => {
   const token = getAuthToken();
   try {
     const response = await axios.post(
       `${API_BASE_URL}/study_sessions`,
-      { discipline_name: disciplineName, assunto: subject },
+      sessionData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       }
     );
     return response.data.new_session;
   } catch (error) {
-    handleAuthError(error);
+    console.error('Erro ao criar sessão de estudo:', error);
+    throw error;
   }
 };
 
@@ -451,18 +452,22 @@ export const getAllEducators = async () => {
   }
 };
 
-// GET study sessions by discipline
 export const getStudySessionFromDiscipline = async (disciplineId) => {
-  const token = getAuthToken();
+  const token = getAuthToken(); // Obtém o token do localStorage
   try {
-    const response = await axios.get(`${API_BASE_URL}/study_sessions/discipline/${disciplineId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data.study_sessions; // Retorna o objeto completo
+    const response = await axios.get(
+      `${API_BASE_URL}/study_sessions/discipline/${disciplineId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Inclui o token na requisição
+        },
+      }
+    );
+    return response.data.study_sessions; // Retorna as sessões de estudo
   } catch (error) {
-    handleAuthError(error);
+    console.error('Erro ao buscar sessões de estudo:', error);
+    handleAuthError(error); // Lida com erros de autenticação
+    throw error;
   }
 };
 

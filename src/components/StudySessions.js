@@ -1,24 +1,35 @@
-// src/components/StudySessions.js
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
   Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import '../styles/StudySessions.css';
-import { getStudySessionFromDiscipline } from '../services/api';
+import { getStudySessionFromDiscipline, createStudySession } from '../services/api';
 
 const StudySessions = () => {
-  const { disciplineId } = useParams(); // Agora usando disciplineId
+  const { disciplineId } = useParams(); // Obtém o ID da disciplina pela URL
   const navigate = useNavigate();
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Função para carregar as sessões de estudo da disciplina
+  // Estado para controle do modal de criação de sessão
+  const [openModal, setOpenModal] = useState(false);
+  const [newSubject, setNewSubject] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+
+  // Função para carregar as sessões de estudo
   const loadStudySessions = useCallback(async () => {
     setLoading(true);
     try {
@@ -29,22 +40,39 @@ const StudySessions = () => {
         setSessions(response.study_sessions);
       } else {
         console.error('Nenhuma sessão de estudo encontrada para esta disciplina.');
-        setSessions([]); // Limpa o estado se não houver sessões
+        setSessions([]);
       }
     } catch (error) {
-      console.error('Erro ao buscar sessões de estudo:', error);
+      console.error('Erro ao carregar sessões de estudo:', error);
     } finally {
       setLoading(false);
     }
   }, [disciplineId]);
 
+  // Carrega as sessões ao montar o componente
   useEffect(() => {
     loadStudySessions();
   }, [loadStudySessions]);
 
-  // Função para lidar com o clique na sessão de estudo
+  // Redireciona para a sessão específica
   const handleSessionClick = (sessionId) => {
     navigate(`/study_sessions/${disciplineId}/${sessionId}`);
+  };
+
+  // Cria uma nova sessão de estudo
+  const handleCreateSession = async () => {
+    try {
+      await createStudySession({
+        discipline_id: parseInt(disciplineId, 10),
+        subject: newSubject,
+        start_time: startTime,
+        end_time: endTime,
+      });
+      setOpenModal(false);
+      loadStudySessions(); // Recarrega as sessões após criação
+    } catch (error) {
+      console.error('Erro ao criar sessão de estudo:', error);
+    }
   };
 
   return (
@@ -54,6 +82,17 @@ const StudySessions = () => {
         <Typography variant="h3" align="center" gutterBottom>
           Sessões de Estudo - Disciplina {disciplineId}
         </Typography>
+
+        <div className="study-actions" style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenModal(true)}
+          >
+            Nova Sessão de Estudo
+          </Button>
+        </div>
 
         <div className="session-list">
           {loading ? (
@@ -75,9 +114,6 @@ const StudySessions = () => {
                   <Typography className="card-description">
                     Fim: {new Date(session.Fim).toLocaleString()}
                   </Typography>
-                  <Typography className="card-description">
-                    Produtividade: {session.Produtividade}
-                  </Typography>
                 </CardContent>
               </Card>
             ))
@@ -87,6 +123,46 @@ const StudySessions = () => {
             </Typography>
           )}
         </div>
+
+        {/* Modal para criar nova sessão */}
+        <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+          <DialogTitle>Criar Nova Sessão de Estudo</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Assunto"
+              fullWidth
+              margin="normal"
+              value={newSubject}
+              onChange={(e) => setNewSubject(e.target.value)}
+            />
+            <TextField
+              label="Data de Início"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Data de Fim"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenModal(false)} color="secondary">
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateSession} color="primary">
+              Criar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

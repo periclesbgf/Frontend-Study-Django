@@ -3,6 +3,7 @@
   display: flex;
   height: 100vh;
   background-color: #2c2f33; /* Fundo do container */
+  overflow: hidden; /* Evita rolagem dupla */
 }
 
 .study-sessions-content {
@@ -12,7 +13,7 @@
   flex-direction: column;
   background-color: #36393f;
   margin-left: 250px; /* Afasta do sidebar */
-  overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura */
+  overflow-y: auto; /* Permite rolagem vertical */
   overflow-x: hidden; /* Impede rolagem horizontal */
 }
 
@@ -24,13 +25,13 @@
 .session-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start; /* Alinhamento à esquerda */
-  gap: 20px; /* Defina um valor menor, por exemplo 10px */
-  row-gap: 10px; /* Ajuste a distância vertical específica entre os cards */
-  padding-right: 10px; /* Para evitar sobreposição com a barra de rolagem */
-  overflow-y: auto; /* Permite rolar verticalmente caso o número de cards ultrapasse o espaço */
+  justify-content: flex-start;
+  gap: 15px; /* Ajusta a distância horizontal */
+  row-gap: 15px; /* Ajusta a distância vertical */
+  padding-right: 10px;
+  overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 transparent; /* Barra de rolagem personalizada */
+  scrollbar-color: #5a5a5a transparent;
 }
 
 .session-list::-webkit-scrollbar {
@@ -38,7 +39,7 @@
 }
 
 .session-list::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
+  background-color: #5a5a5a;
   border-radius: 4px;
 }
 
@@ -46,70 +47,71 @@
   background-color: #888;
 }
 
-/* Estilos para os cards */
+/* Estilos dos cards */
 .card {
-  width: 250px; /* Largura fixa */
-  min-height: 150px; /* Altura mínima */
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  width: 280px; /* Aumenta a largura para melhor visualização */
+  min-height: 180px; /* Aumenta a altura mínima */
+  background-color: #42464d;
+  border: 1px solid #444;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Garante que o conteúdo ocupe todo o espaço disponível */
+  justify-content: space-between;
 }
 
 .card:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .card-content {
-  padding: 15px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 10px;
-  color: #333;
-  word-wrap: break-word; /* Permite que o título quebre em várias linhas, se necessário */
+  margin-bottom: 12px;
+  color: #ffffff;
+  word-wrap: break-word;
 }
 
 .card-description {
-  font-size: 0.9rem;
-  color: #666;
-  word-wrap: break-word; /* Permite que a descrição quebre em várias linhas, se necessário */
-  white-space: normal; /* Permite que o texto use múltiplas linhas */
-  overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o card */
+  font-size: 0.95rem;
+  color: #d1d1d1;
+  word-wrap: break-word;
+  white-space: normal;
+  overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
 /* Modal */
 .MuiDialogContent-root {
-  background-color: #f0f0f0;
+  background-color: #2c2f33;
+  color: #fff;
 }
 
 .MuiDialogActions-root {
-  background-color: #f0f0f0;
+  background-color: #2c2f33;
 }
 
-/* Responsividade para telas menores */
+/* Responsividade */
 @media (max-width: 1024px) {
   .card {
-    width: 48%; /* Ajusta o tamanho dos cards para 2 colunas */
+    width: 48%; /* Exibe duas colunas em telas médias */
   }
 }
 
 @media (max-width: 768px) {
   .card {
-    width: 100%; /* Em telas pequenas, cards ocupam toda a largura */
+    width: 100%; /* Exibe uma coluna em telas pequenas */
   }
 }
