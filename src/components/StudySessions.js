@@ -69,7 +69,7 @@ const StudySessions = () => {
   const [openAutoplanModal, setOpenAutoplanModal] = useState(false);
   const [sessionsWithoutPlan, setSessionsWithoutPlan] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState('');
-  const [autoplanDuration, setAutoplanDuration] = useState('60 minutos');
+  const [autoplanDuration, setAutoplanDuration] = useState('60');
   const [generatingPlan, setGeneratingPlan] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [loadingSessionsWithoutPlan, setLoadingSessionsWithoutPlan] = useState(false);
@@ -131,34 +131,24 @@ const StudySessions = () => {
   };
 
   const handleGenerateAutoPlan = async () => {
-    if (!selectedSessionId) {
-      return;
-    }
+    if (!selectedSessionId) return;
   
     setGeneratingPlan(true);
     try {
-      // Get the selected session data
       const selectedSession = sessionsWithoutPlan.find(
-        session => session.id_sessao === selectedSessionId
+        (session) => session.id_sessao === selectedSessionId
       );
   
-      if (!selectedSession) {
-        throw new Error('Sessão não encontrada');
-      }
+      if (!selectedSession) throw new Error('Sessão não encontrada');
   
-      const result = await createAutomaticStudyPlan(
-        disciplineId,
-        {
-          session_id: selectedSessionId,
-          descricao: selectedSession.Assunto,
-          duracao: autoplanDuration
-        }
-      );
-      
+      const result = await createAutomaticStudyPlan(disciplineId, {
+        session_id: selectedSessionId,
+        descricao: selectedSession.Assunto,
+        duracao: autoplanDuration, // Agora no formato HH:mm
+      });
+  
       setGeneratedPlan(result.plano);
       setError(null);
-      
-      // Recarrega as sessões após a geração do plano
       await loadStudySessions();
       await loadSessionsWithoutPlan();
     } catch (error) {
@@ -168,6 +158,7 @@ const StudySessions = () => {
       setGeneratingPlan(false);
     }
   };
+  
   // Handler para criação manual de sessão
   const handleCreateSession = async () => {
     try {
@@ -467,32 +458,42 @@ const StudySessions = () => {
                   Selecione uma sessão para gerar o plano de estudos
                 </FormHelperText>
               </FormControl>
-                <TextField
-                  label="Duração Desejada"
-                  fullWidth
-                  margin="normal"
-                  value={autoplanDuration}
-                  onChange={(e) => setAutoplanDuration(e.target.value)}
-                  helperText="Ex: 60 minutos, 90 minutos, etc."
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#40444b',
-                      color: '#ffffff',
-                      '& fieldset': {
-                        borderColor: '#4f545c',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#5865F2',
-                      },
+              <TextField
+                label="Duração Desejada (em minutos)"
+                fullWidth
+                margin="normal"
+                value={autoplanDuration}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setAutoplanDuration(value); // Atualiza apenas se for numérico
+                  }
+                }}
+                helperText="Insira a duração em minutos (ex: 60, 90)"
+                inputProps={{
+                  inputMode: 'numeric', // Força teclado numérico em dispositivos móveis
+                  pattern: '[0-9]*', // Aceita apenas dígitos
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#40444b',
+                    color: '#ffffff',
+                    '& fieldset': {
+                      borderColor: '#4f545c',
                     },
-                    '& .MuiInputLabel-root': {
-                      color: '#b9bbbe',
+                    '&:hover fieldset': {
+                      borderColor: '#5865F2',
                     },
-                    '& .MuiFormHelperText-root': {
-                      color: '#b9bbbe',
-                    },
-                  }}
-                />
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#b9bbbe',
+                  },
+                  '& .MuiFormHelperText-root': {
+                    color: '#b9bbbe',
+                  },
+                }}
+              />
+
               </>
             )}
             {generatingPlan && (
