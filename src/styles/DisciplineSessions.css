@@ -2,7 +2,6 @@
 .discipline-sessions-container {
   display: flex;
   height: 100vh;
-  background-color: hsl(214, 7%, 19%); /* Fundo do container */
   width: 100vh;
 }
 

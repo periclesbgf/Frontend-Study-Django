@@ -503,3 +503,17 @@ export const updateProfile = async (profileData) => {
     handleAuthError(error);
   }
 };
+
+export const getStudyPlan = async (sessionId) => {
+  const token = getAuthToken(); 
+  try {
+    const response = await axios.get(`${API_BASE_URL}/study_plan/${sessionId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};

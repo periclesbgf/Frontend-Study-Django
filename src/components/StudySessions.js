@@ -16,7 +16,13 @@ import {
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import '../styles/StudySessions.css';
-import { getStudySessionFromDiscipline, createStudySession, updateStudySession } from '../services/api';
+import { 
+  getStudySessionFromDiscipline, 
+  createStudySession, 
+  updateStudySession, 
+  getStudySessionById, 
+  getStudyPlan
+} from '../services/api';
 
 const StudySessions = () => {
   const { disciplineId } = useParams();
@@ -27,10 +33,15 @@ const StudySessions = () => {
 
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [newSubject, setNewSubject] = useState('');
+  const [newStartTime, setNewStartTime] = useState('');
+  const [newEndTime, setNewEndTime] = useState('');
 
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editSession, setEditSession] = useState(null);
   const [editSubject, setEditSubject] = useState('');
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
+  const [editPlan, setEditPlan] = useState('');
 
   const loadStudySessions = useCallback(async () => {
     setLoading(true);
@@ -61,31 +72,50 @@ const StudySessions = () => {
       await createStudySession({
         discipline_id: parseInt(disciplineId, 10),
         subject: newSubject,
+        start_time: newStartTime,
+        end_time: newEndTime,
       });
       setOpenCreateModal(false);
+      setNewSubject('');
+      setNewStartTime('');
+      setNewEndTime('');
       loadStudySessions();
     } catch (error) {
       console.error('Erro ao criar sessão de estudo:', error);
     }
   };
 
-  const handleEditSession = (session) => {
-    setEditSession(session);
-    setEditSubject(session.Assunto);
-    setOpenEditModal(true);
+  const handleEditSession = async (sessionId) => {
+    try {
+      const session = await getStudySessionById(sessionId);
+      const plan = await getStudyPlan(sessionId);
+
+      setEditSession(session);
+      setEditSubject(session.Assunto || '');
+      setEditStartTime(session.Inicio || '');
+      setEditEndTime(session.Fim || '');
+      setEditPlan(plan.descricao || '');
+      setOpenEditModal(true);
+    } catch (error) {
+      console.error('Erro ao buscar sessão ou plano de estudo:', error);
+    }
   };
 
   const handleUpdateSession = async () => {
     try {
       await updateStudySession(editSession.IdSessao, {
         subject: editSubject,
+        descricao: editPlan,
+        start_time: editStartTime,
+        end_time: editEndTime,
       });
       setOpenEditModal(false);
-      loadStudySessions();
+      loadStudySessions(); // Recarrega as sessões após a atualização
     } catch (error) {
       console.error('Erro ao atualizar sessão de estudo:', error);
     }
   };
+  
 
   return (
     <div className="study-sessions-container">
@@ -116,7 +146,7 @@ const StudySessions = () => {
               <Card key={session.IdSessao} className="card" style={{ position: 'relative', minHeight: '120px' }}>
                 <CardContent className="card-content" style={{ paddingBottom: '40px' }}>
                   <IconButton
-                    onClick={() => handleEditSession(session)}
+                    onClick={() => handleEditSession(session.IdSessao)}
                     color="primary"
                     aria-label="editar"
                     style={{ position: 'absolute', top: 8, right: 8 }}
@@ -157,6 +187,24 @@ const StudySessions = () => {
               value={newSubject}
               onChange={(e) => setNewSubject(e.target.value)}
             />
+            <TextField
+              label="Data de Início"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={newStartTime}
+              onChange={(e) => setNewStartTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Data de Fim"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={newEndTime}
+              onChange={(e) => setNewEndTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenCreateModal(false)} color="secondary">
@@ -177,6 +225,33 @@ const StudySessions = () => {
               margin="normal"
               value={editSubject}
               onChange={(e) => setEditSubject(e.target.value)}
+            />
+            <TextField
+              label="Data de Início"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={editStartTime}
+              onChange={(e) => setEditStartTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Data de Fim"
+              type="datetime-local"
+              fullWidth
+              margin="normal"
+              value={editEndTime}
+              onChange={(e) => setEditEndTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Plano de Estudos"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              value={editPlan}
+              onChange={(e) => setEditPlan(e.target.value)}
             />
           </DialogContent>
           <DialogActions>
