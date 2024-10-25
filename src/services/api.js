@@ -517,3 +517,50 @@ export const getStudyPlan = async (sessionId) => {
     handleAuthError(error);
   }
 };
+
+export const createAutomaticStudyPlan = async (disciplineId, tema, duracao = "60 minutos") => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/study_plan/auto`,
+      {
+        disciplina: disciplineId,
+        tema: tema,
+        duracao_desejada: duracao,
+        objetivos: []
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    return response.data;
+    
+  } catch (error) {
+    console.error('Erro ao gerar plano automático:', error);
+    handleAuthError(error);
+    throw error;
+  }
+};
+
+export const getSessionsWithoutPlan = async () => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/study_plan/sessions/without_plan`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data; // Return the complete response
+  } catch (error) {
+    console.error('Erro ao buscar sessões sem plano:', error);
+    handleAuthError(error);
+    throw error;
+  }
+};
