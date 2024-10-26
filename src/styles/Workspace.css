@@ -1,0 +1,92 @@
+.workspace-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #36393f;
+    user-select: none;
+  }
+  
+  .workspace-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+  
+  .workspace-main {
+    margin-top: 2rem;
+  }
+  
+  /* Drag and Drop Styles */
+  .droppable-area {
+    min-height: 50px;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .droppable-area.drag-over {
+    background-color: rgba(88, 101, 242, 0.1);
+  }
+  
+  .draggable-item {
+    transition: transform 0.2s ease;
+  }
+  
+  .draggable-item.dragging {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Upload Zone */
+  .upload-zone {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .upload-zone.has-file {
+    border-color: #5865F2;
+    background-color: rgba(88, 101, 242, 0.1);
+  }
+  
+  /* Scrollbar Styles */
+  .workspace-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .workspace-content::-webkit-scrollbar-track {
+    background: #2f3136;
+    border-radius: 4px;
+  }
+  
+  .workspace-content::-webkit-scrollbar-thumb {
+    background: #202225;
+    border-radius: 4px;
+  }
+  
+  .workspace-content::-webkit-scrollbar-thumb:hover {
+    background: #40444b;
+  }
+  
+  /* Session Collapse Animation */
+  .MuiCollapse-root {
+    transition: height 0.3s ease !important;
+  }
+  
+  /* File Icons */
+  .file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .workspace-content {
+      padding: 1rem;
+    }
+    
+    .MuiGrid-root {
+      margin-top: 1rem;
+    }
+  }

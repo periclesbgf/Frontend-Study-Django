@@ -1,86 +1,316 @@
-/* CalendarComponent.css */
-.calendar-container {
-    max-width: 1100px;
+/* src/styles/CalendarComponent.css */
+
+.calendar-wrapper {
+    padding: 24px;
+    min-height: 100vh;
+    background-color: #36393f;
+  }
+  
+  .calendar-title {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+  
+  .calendar-container {
+    background-color: #2f3136;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #40444b;
+    height: calc(100vh - 200px);
+    max-width: 1400px;
     margin: 0 auto;
-    background-color: #1e1e1e; /* Fundo escuro */
-    padding: 20px;
-    border-radius: 10px;
-    color: #fff; /* Cor do texto para contraste */
-    height: 92%;
-    min-height: 90%; /* Tamanho mínimo do calendário */
-}
-
-/* Estilo para os dias e eventos */
-.rbc-month-view, .rbc-time-view {
-    background-color: #282828; /* Cor de fundo da tabela do calendário */
-    min-height: 100%; /* Garante altura mínima */
-}
-
-.rbc-event {
-    background-color: #3b82f6; /* Cor de destaque para eventos */
-    color: #fff;
-    border-radius: 4px;
-    padding: 4px;
-    font-size: 0.9rem;
-}
-
-.rbc-event:hover {
-    background-color: #2563eb;
-}
-
-/* Estilo das linhas do calendário */
-.rbc-row-segment, .rbc-time-slot {
-    border-color: #444; /* Cor das linhas que separam os dias */
-}
-
-.rbc-toolbar {
-    background-color: #1e1e1e; /* Fundo da barra de navegação */
-    border-bottom: 1px solid #444;
-}
-
-.rbc-toolbar button {
-    background-color: #fcfcfc;
-    color: #000;
+  }
+  
+  /* Calendar Loading */
+  .calendar-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+    color: #ffffff;
+  }
+  
+  /* Toolbar Styles */
+  .rbc-toolbar {
+    margin-bottom: 20px;
+    padding: 12px;
+    background-color: #40444b;
+    border-radius: 8px;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .rbc-toolbar button {
+    background-color: #4f545c;
+    color: #ffffff;
     border: none;
-    padding: 5px 10px;
+    padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-}
-
-.rbc-toolbar button:hover {
-    background-color: #555;
-    color: #fff;
-}
-
-.rbc-toolbar-label {
-    font-size: 1.4rem;
-    color: #fff;
-}
-
-/* Estilo do dia atual */
-.rbc-today {
-    background-color: rgba(55, 185, 61, 0.3); /* Verde claro com transparência */
-}
-
-.rbc-day-bg {
-    background-color: #1e1e1e;
-}
-
-.rbc-time-header {
-    border-color: #444;
-}
-
-/* Estilo do header do calendário */
-.rbc-header {
-    background-color: #333;
-    color: #fff;
-    border: none;
-}
-
-.rbc-header:hover {
-    background-color: #444;
-}
-
-.rbc-off-range-bg {
-    background-color: #222; /* Cor para dias que não pertencem ao mês atual */
-}
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+  
+  .rbc-toolbar button:hover {
+    background-color: #5865F2;
+    transform: translateY(-1px);
+  }
+  
+  .rbc-toolbar button.rbc-active {
+    background-color: #5865F2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .rbc-toolbar-label {
+    font-weight: 600;
+    font-size: 1.2em;
+    color: #ffffff;
+  }
+  
+  /* Calendar Grid */
+  .rbc-month-view {
+    border: 1px solid #40444b;
+    background-color: #2f3136;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .rbc-header {
+    padding: 12px;
+    font-weight: 600;
+    background-color: #40444b;
+    color: #ffffff;
+    border-bottom: 1px solid #4f545c;
+  }
+  
+  .rbc-date-cell {
+    padding: 8px;
+    color: #ffffff;
+  }
+  
+  .rbc-off-range {
+    color: #72767d;
+  }
+  
+  .rbc-today {
+    background-color: rgba(88, 101, 242, 0.1) !important;
+  }
+  
+  /* Event Styles */
+  .calendar-event-content {
+    background-color: #5865F2;
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .calendar-event-content:hover {
+    background-color: #4752C4;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Modal Styles */
+  .calendar-modal .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    background-color: #36393f;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid #40444b;
+    outline: none;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: #2f3136;
+    border-bottom: 1px solid #40444b;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .modal-header h6 {
+    color: #ffffff;
+    margin: 0;
+  }
+  
+  .close-button {
+    color: #b9bbbe !important;
+  }
+  
+  .modal-body {
+    padding: 24px;
+  }
+  
+  .modal-field {
+    margin-bottom: 16px !important;
+  }
+  
+  .modal-field .MuiInputBase-root {
+    background-color: #40444b;
+    border-radius: 4px;
+    color: #ffffff;
+  }
+  
+  .modal-field .MuiInputLabel-root {
+    color: #b9bbbe;
+  }
+  
+  .modal-field .MuiOutlinedInput-notchedOutline {
+    border-color: #4f545c;
+  }
+  
+  .field-icon {
+    color: #b9bbbe;
+    margin-right: 8px;
+  }
+  
+  .datetime-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #40444b;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  
+  /* Buttons */
+  .add-button {
+    background-color: #5865F2 !important;
+    color: #ffffff !important;
+    padding: 8px 24px !important;
+  }
+  
+  .update-button {
+    background-color: #5865F2 !important;
+    color: #ffffff !important;
+    padding: 8px 24px !important;
+  }
+  
+  .delete-button {
+    background-color: #ed4245 !important;
+    color: #ffffff !important;
+    padding: 8px 24px !important;
+  }
+  
+  .cancel-button {
+    color: #b9bbbe !important;
+    padding: 8px 24px !important;
+  }
+  
+  .confirm-delete-button {
+    background-color: #ed4245 !important;
+    color: #ffffff !important;
+    padding: 8px 24px !important;
+  }
+  
+  .delete-confirmation {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Snackbar */
+  .snackbar-alert {
+    border-radius: 4px;
+  }
+  
+  .snackbar-alert.MuiAlert-standardSuccess {
+    background-color: #3ba55c;
+    color: #ffffff;
+  }
+  
+  .snackbar-alert.MuiAlert-standardError {
+    background-color: #ed4245;
+    color: #ffffff;
+  }
+  
+  /* Time Grid */
+  .rbc-time-view {
+    background-color: #2f3136;
+    border: 1px solid #40444b;
+    border-radius: 8px;
+  }
+  
+  .rbc-time-header {
+    background-color: #40444b;
+  }
+  
+  .rbc-time-content {
+    border-top: 1px solid #40444b;
+  }
+  
+  .rbc-time-slot {
+    color: #b9bbbe;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .calendar-wrapper {
+      padding: 16px;
+    }
+  
+    .calendar-container {
+      padding: 16px;
+    }
+  
+    .rbc-toolbar {
+      flex-direction: column;
+      gap: 12px;
+    }
+  
+    .datetime-fields {
+      grid-template-columns: 1fr;
+    }
+  
+    .modal-content {
+      width: 95%;
+      margin: 16px;
+    }
+  }
+  
+  /* Hover Effects */
+  .rbc-date-cell:hover {
+    background-color: rgba(88, 101, 242, 0.05);
+  }
+  
+  .rbc-row-segment:hover {
+    background-color: rgba(88, 101, 242, 0.05);
+  }
+  
+  /* Tooltip Customization */
+  .MuiTooltip-tooltip {
+    background-color: #18191c !important;
+    border: 1px solid #40444b;
+    padding: 12px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .MuiTooltip-arrow {
+    color: #18191c !important;
+  }

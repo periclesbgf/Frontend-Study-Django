@@ -1,134 +1,221 @@
 /* DisciplineSessions.css */
+/* src/styles/DisciplineSessions.css */
+:root {
+  --primary-color: #5865F2;
+  --primary-hover: #4752C4;
+  --bg-primary: #36393f;
+  --bg-secondary: #2f3136;
+  --bg-tertiary: #202225;
+  --text-primary: #ffffff;
+  --text-secondary: #b9bbbe;
+  --border-color: #40444b;
+  --success-color: #43b581;
+  --error-color: #f04747;
+  --card-bg: #2f3136;
+  --card-hover: #36393f;
+  --sidebar-width: 240px;
+}
+
+/* Layout Base */
 .discipline-sessions-container {
   display: flex;
   height: 100vh;
-  width: 100vh;
+  width: 100vw;
+  background-color: var(--bg-primary);
 }
 
 .discipline-sessions-content {
   flex: 1;
-  padding: 20px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  background-color: #444;
-  margin-left: 250px; /* Afasta do sidebar */
-  overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura */
-  overflow-x: hidden; /* Impede rolagem horizontal */
+  margin-left: var(--sidebar-width);
+  overflow-y: auto;
+  max-width: calc(100vw - var(--sidebar-width));
+}
+
+/* Header e Botões */
+.page-title {
+  color: var(--text-primary);
+  margin-bottom: 32px;
+  font-weight: 600;
 }
 
 .discipline-actions {
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
 }
 
+.add-button {
+  padding: 8px 24px !important;
+  font-size: 1rem !important;
+  text-transform: none !important;
+  background-color: var(--primary-color) !important;
+}
+
+.add-button:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+/* Grid de Disciplinas */
 .discipline-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start; /* Alinhamento à esquerda */
-  gap: 20px; /* Defina um valor menor, por exemplo 10px */
-  row-gap: 10px; /* Ajuste a distância vertical específica entre os cards */
-  padding-right: 10px; /* Para evitar sobreposição com a barra de rolagem */
-  overflow-y: auto; /* Permite rolar verticalmente caso o número de cards ultrapasse o espaço */
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 transparent; /* Barra de rolagem personalizada */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 0 8px;
 }
 
-.discipline-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.discipline-list::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
-  border-radius: 4px;
-}
-
-.discipline-list::-webkit-scrollbar-thumb:hover {
-  background-color: #888;
-}
-
-/* Estilos para os cards */
-.card {
-  width: 250px; /* Largura fixa */
-  min-height: 150px; /* Altura mínima */
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Cards */
+.discipline-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+  height: 100%;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Garante que o conteúdo ocupe todo o espaço disponível */
 }
 
-.card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.discipline-card:hover {
+  transform: translateY(-4px);
+  background-color: var(--card-hover) !important;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
 .card-content {
-  padding: 15px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  padding: 20px !important;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-icon {
+  color: var(--primary-color);
 }
 
 .card-title {
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #333;
-  word-wrap: break-word; /* Permite que o título quebre em várias linhas, se necessário */
+  color: var(--text-primary) !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
 }
 
 .card-description {
-  font-size: 0.9rem;
-  color: #666;
-  word-wrap: break-word; /* Permite que a descrição quebre em várias linhas, se necessário */
-  white-space: normal; /* Permite que o texto use múltiplas linhas */
-  overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o card */
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
-  -webkit-box-orient: vertical;
+  color: var(--text-secondary) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+  flex: 1;
+  margin-bottom: 16px !important;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.card-update {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
 }
 
 /* Modal */
-.MuiDialogContent-root {
-  background-color: #f0f0f0;
+.discipline-modal .MuiDialog-paper {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
-.MuiDialogActions-root {
-  background-color: #f0f0f0;
+.discipline-modal .MuiDialogTitle-root {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 20px 24px;
 }
 
-/* Exibir o nome do arquivo de PDF abaixo do botão de upload */
-.pdf-file-name {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #888;
+.modal-input .MuiInputLabel-root {
+  color: var(--text-secondary);
 }
 
-/* Exibe o chip do professor selecionado */
-.selected-educator-chip {
-  margin-top: 10px;
-  background-color: #f0f0f0;
-  color: #000;
-  font-weight: bold;
+.modal-input .MuiOutlinedInput-root {
+  background-color: var(--bg-tertiary);
 }
 
-/* Estilo para o label do Chip dentro de .selected-educator-chip */
-.selected-educator-chip .MuiChip-label {
-  color: #000 !important; /* Garantir que a cor do texto seja preto */
+.modal-input .MuiOutlinedInput-input {
+  color: var(--text-primary);
 }
-/* Responsividade para telas menores */
-@media (max-width: 1024px) {
-  .card {
-    width: 48%; /* Ajusta o tamanho dos cards para 2 colunas */
+
+.educator-select {
+  margin-top: 20px;
+}
+
+.selected-educator {
+  margin-top: 12px;
+}
+
+.selected-educator .MuiChip-root {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Upload Area */
+.upload-area {
+  margin-top: 24px;
+  padding: 24px;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+  border-color: var(--primary-color);
+  background-color: rgba(88, 101, 242, 0.1);
+}
+
+/* Chip Styles */
+.MuiChip-root {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color);
+}
+
+.MuiChip-deleteIcon {
+  color: var(--text-secondary) !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .discipline-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .discipline-sessions-content {
+    margin-left: 0;
+    max-width: 100vw;
+    padding: 16px;
+  }
+
+  .discipline-list {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .card {
-    width: 100%; /* Em telas pequenas, cards ocupam toda a largura */
+    min-height: 150px;
   }
 }

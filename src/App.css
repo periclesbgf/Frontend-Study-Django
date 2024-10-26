@@ -37,3 +37,30 @@
     transform: rotate(360deg);
   }
 }
+
+/* No seu arquivo de estilos globais */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin var(--transition-speed) ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}

@@ -1,167 +1,437 @@
 /* src/styles/ChatPage.css */
+:root {
+  --chat-horizontal-padding: 20px;
+  --primary-color: #5865F2;
+  --primary-hover: #4752C4;
+  --bg-primary: #36393f;
+  --bg-secondary: #2f3136;
+  --bg-tertiary: #202225;
+  --text-primary: #ffffff;
+  --text-secondary: #b9bbbe;
+  --border-color: #40444b;
+  --success-color: #43b581;
+  --error-color: #f04747;
+  --message-user-bg: #5865F2;
+  --message-bot-bg: #40444b;
+  --input-bg: #40444b;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-quick: all 0.2s ease;
+  --sidebar-width: 240px;
+  --study-plan-width: 300px;
+  --max-chat-width: 1200px;
+}
 
-/* O contêiner do chat deve ocupar toda a altura e a largura disponíveis */
-.chat-container {
+/* Base Layout */
+.chat-page-container {
   display: flex;
-  flex-direction: column;
-  height: 100vh; /* Ocupar toda a altura da janela */
-  background-color: #333;
-  padding: 0;
-  box-sizing: border-box;
-  width: auto; /* Ajustar para ocupar a largura total */
-  min-width: 90vh;
-  overflow: hidden; /* Prevenir rolagem no contêiner principal */
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+.chat-content-wrapper {
+  display: flex;
+  flex: 1;
+  height: 100vh;
+  margin-left: var(--sidebar-width);
+  max-width: calc(100vw - var(--sidebar-width));
+  position: relative;
 }
 
 .chat-page-content {
-  margin-left: 250px; /* Ajuste para a largura da sidebar */
-}
-
-/* O cabeçalho do chat */
-.chat-header {
-  text-align: center;
-  color: #fff;
-  padding: 10px;
-  font-size: 1.5rem;
-  font-weight: 500;
-  border-bottom: 1px solid #444;
-  background-color: #333;
-  flex-shrink: 0;
-}
-
-/* A área das mensagens deve ser rolável */
-.chat-messages {
-  flex-grow: 1;
-  padding: 10px;
-  overflow-y: auto;
-  background-color: #444;
-  border: 0px solid #000101;
-  border-radius: 10px;
-  margin: 15px 0;
-  box-sizing: border-box;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: var(--max-chat-width);
+  margin: 0 auto;
+  padding: 0 var(--chat-horizontal-padding);
 }
 
-/* Estilos para as mensagens */
-.chat-message {
+/* Chat Container */
+.chat-container {
   display: flex;
-  margin-bottom: 10px;
-  padding: 10px;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: pre-wrap;
-  font-size: 16px;
-  line-height: 1.4;
-  border-radius: 10px;
-  max-width: 70%; /* Limitar a largura máxima para que a mensagem não fique muito larga */
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 }
 
-/* Mensagens do usuário alinhadas à direita */
-.chat-message.user {
-  background-color: #1976d2;
-  color: #fff;
-  align-self: flex-end; /* Alinha as mensagens à direita */
-  width: auto; /* Ajusta a largura automaticamente */
-}
-
-/* Mensagens do bot alinhadas à esquerda */
-.chat-message.assistant {
-  background-color: #e0e0e0;
-  color: #000; /* Garante que o texto seja visível no fundo claro */
-  align-self: flex-start; /* Alinha as mensagens à esquerda */
-  margin-right: auto; /* Faz com que o conteúdo vá para a esquerda */
-  max-width: 70%;
-  width: auto;
-}
-
-/* Estilo para blocos de código nas mensagens do bot */
-.chat-message pre {
-  background-color: #282c34; /* Fundo escuro para o código */
-  color: #ffffff; /* Cor do texto para o código */
-  padding: 10px;
-  border-radius: 5px;
-  overflow-x: auto;
-  font-size: 14px; /* Tamanho menor para o código */
-  margin: 10px 0; /* Espaço ao redor do bloco de código */
-}
-
-.chat-message code {
-  background-color: #f5f5f5; /* Fundo claro para inline code */
-  color: #000; /* Cor do texto do código */
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-size: 14px;
-}
-
-/* Mensagens inline sem código também precisam de contraste */
-.chat-message.assistant p {
-  color: #000; /* Garante que o texto seja visível em fundo claro */
-}
-
-/* O campo de entrada e botão de envio */
-.chat-input-container {
-  display: flex;
-  padding: 10px 20px;
-  background-color: #444;
-  border-top: 1px solid #555;
-  box-sizing: border-box;
+/* Header */
+.chat-header {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   flex-shrink: 0;
 }
 
-.chat-input {
-  flex-grow: 1;
-  background-color: #dadada;
-  color: #000;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
+.session-details {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
 }
 
-.chat-input::placeholder {
-  color: #000;
+/* Messages Area */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+  min-height: 0;
 }
 
-.chat-send-button {
-  background-color: #0084ff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  margin-left: 10px;
-  cursor: pointer;
-}
-
-.chat-send-button:hover {
-  background-color: #005fa8;
-}
-
-/* Estilo da barra de rolagem */
 .chat-messages::-webkit-scrollbar {
   width: 8px;
 }
 
 .chat-messages::-webkit-scrollbar-track {
-  background-color: #444;
+  background-color: var(--bg-primary);
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
+  background-color: var(--border-color);
+  border-radius: 4px;
 }
 
 .chat-messages::-webkit-scrollbar-thumb:hover {
-  background-color: #555;
-}
-/* Ajuste fino no espaçamento dos elementos de texto */
-.chat-message p,
-.chat-message h3,
-.chat-message ul,
-.chat-message li,
-.chat-message ol {
-  margin: 5px 0; /* Reduz o espaçamento vertical entre os elementos */
-  line-height: 1.5; /* Ajuste para melhorar a leitura */
+  background-color: var(--bg-tertiary);
 }
 
+/* Messages */
+.chat-message {
+  display: flex;
+  padding: 0 !important;
+  margin: 4px 0;
+}
+
+.chat-message.user {
+  justify-content: flex-end;
+}
+
+.chat-message .message-content {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: var(--message-bot-bg);
+  color: var(--text-primary);
+  animation: messageAppear 0.3s ease-out;
+  word-break: break-word;
+}
+
+.chat-message.user .message-content {
+  background-color: var(--message-user-bg);
+}
+
+/* Input Area */
+.chat-input-container {
+  padding: 16px 0;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.file-button {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  min-width: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  flex-shrink: 0;
+}
+
+.file-button:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
+.chat-input-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-input-field .MuiOutlinedInput-root {
+  background-color: var(--input-bg);
+  border-radius: 8px;
+}
+
+.chat-input-field .MuiOutlinedInput-input {
+  color: var(--text-primary);
+  padding: 12px 16px;
+}
+
+.chat-input-field .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.chat-input-field:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-color);
+}
+
+.chat-input-field.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-color);
+}
+
+.send-button {
+  min-width: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  background-color: var(--primary-color) !important;
+  flex-shrink: 0;
+}
+
+.send-button:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+.send-button.Mui-disabled {
+  background-color: var(--bg-tertiary) !important;
+}
+
+/* File Chip */
+.file-chip {
+  margin-bottom: 12px !important;
+}
+
+/* Study Plan Panel */
+.study-plan-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: var(--study-plan-width);
+  height: 100vh;
+  background-color: var(--bg-tertiary);
+  transform: translateX(100%);
+  transition: transform var(--transition-quick);
+  z-index: 1000;
+  overflow-y: auto;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.study-plan-panel.open {
+  transform: translateX(0);
+}
+
+.study-plan-panel .plan-header {
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.study-plan-content {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.study-plan-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.study-plan-content::-webkit-scrollbar-track {
+  background-color: var(--bg-tertiary);
+}
+
+.study-plan-content::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.topic-item {
+  margin-bottom: 16px;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.topic-header {
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topic-header:hover {
+  background-color: var(--bg-primary);
+}
+
+.topic-content {
+  background-color: var(--bg-primary);
+  padding: 8px 0;
+}
+
+.subtopic-list {
+  padding: 8px 0;
+}
+
+.subtopic-item {
+  padding: 8px 16px 8px 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resources-section,
+.activity-section {
+  padding: 8px 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--success-color);
+  transition: width 0.3s ease;
+}
+
+.plan-description {
+  background-color: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Code Blocks */
+.chat-message pre {
+  background-color: var(--bg-tertiary) !important;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.chat-message code {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+}
+
+/* Study Plan Toggle Button */
+.study-plan-toggle {
+  position: fixed !important;
+  right: 20px !important;
+  top: 20px !important;
+  z-index: 1001 !important;
+  background-color: var(--primary-color) !important;
+  color: var(--text-primary) !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.study-plan-toggle:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+/* Animations */
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Styles */
+@media (min-width: 1600px) {
+  .chat-page-content {
+    max-width: 1400px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .chat-page-content {
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-content-wrapper {
+    margin-left: 0;
+    max-width: 100vw;
+  }
+
+  .chat-page-content {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+
+  .chat-message .message-content {
+    max-width: 85%;
+  }
+
+  .study-plan-panel {
+    width: 100%;
+  }
+
+  .study-plan-toggle {
+    right: 12px !important;
+    top: 12px !important;
+  }
+
+  .chat-input-wrapper {
+    gap: 8px;
+  }
+}
+
+.topic-header .MuiTypography-subtitle1 {
+  color: var(--text-primary); /* Vai usar a cor primária (azul atual) */
+}
+.resources-section .MuiTypography-subtitle2 {
+  color: var(--text-primary) !important; /* Título "Recursos" */
+}
+.resources-section .MuiTypography-body2 {
+  color: var(--text-primary) !important; /* Texto dos recursos */
+}
+
+.activity-section .MuiTypography-subtitle2 {
+  color: var(--text-primary) !important; /* Título "Atividade" */
+}
+
+.activity-section .MuiTypography-body2 {
+  color: var(--text-primary) !important; /* Texto da atividade */
+}

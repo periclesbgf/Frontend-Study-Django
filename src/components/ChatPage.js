@@ -14,10 +14,17 @@ import {
   CircularProgress,
   IconButton,
   Chip,
+  Paper,
+  Collapse,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import { sendPrompt, getStudySessionById, getChatHistory } from '../services/api';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import CloseIcon from '@mui/icons-material/Close';
+import { sendPrompt, getStudySessionById, getChatHistory, getStudyPlan } from '../services/api';
 import '../styles/ChatPage.css';
 
 import BotImage from '../assets/output_image.png';
@@ -31,11 +38,21 @@ const ChatPage = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [earliestTimestamp, setEarliestTimestamp] = useState(null);
+  const [studyPlan, setStudyPlan] = useState(null);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [expandedSection, setExpandedSection] = useState('');
+  const [isStudyPlanOpen, setIsStudyPlanOpen] = useState(false);
+  
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const loadSessionDetails = useCallback(async () => {
     try {
@@ -51,43 +68,76 @@ const ChatPage = () => {
         setMessages([{ role: 'assistant', content: `Bem-vindo à sessão ${sessionId}! Como posso ajudar você hoje?` }]);
         setHasMore(false);
       }
-      setIsInitialLoad(false);
       scrollToBottom();
     } catch (error) {
       console.error('Erro ao carregar os detalhes da sessão:', error);
     }
   }, [sessionId]);
 
+  const loadStudyPlan = useCallback(async () => {
+    if (!sessionId) return;
+    
+    setLoadingPlan(true);
+    try {
+      const response = await getStudyPlan(sessionId);
+      
+      // Mapeia os dados do plano para o formato esperado
+      const mappedPlan = {
+        title: response.disciplina,
+        description: response.descricao,
+        objective: response.objetivo_sessao,
+        totalDuration: response.duracao_total,
+        topics: response.plano_execucao.map(topic => ({
+          title: topic.titulo,
+          duration: topic.duracao,
+          description: topic.descricao,
+          progress: topic.progresso,
+          subtopics: topic.conteudo.map((content, index) => ({
+            title: content,
+            completed: topic.progresso > (index + 1) * (100 / topic.conteudo.length)
+          })),
+          resources: topic.recursos,
+          activity: topic.atividade
+        }))
+      };
+
+      setStudyPlan(mappedPlan);
+    } catch (error) {
+      console.error('Erro ao carregar plano de estudos:', error);
+    } finally {
+      setLoadingPlan(false);
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     loadSessionDetails();
-  }, [loadSessionDetails]);
+    loadStudyPlan();
+  }, [loadSessionDetails, loadStudyPlan]);
 
   const handleSendMessage = async () => {
-    if (!input.trim() && !file) return;
-    if (loading) return;
+    if ((!input.trim() && !file) || loading) return;
 
     const userMessage = { role: 'user', content: input };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
 
     try {
       setLoading(true);
       const response = await sendPrompt(sessionId, input, disciplineId, file);
       const botMessage = { role: 'assistant', content: response.response };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+      setMessages(prev => [...prev, botMessage]);
 
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = null;
-      scrollToBottom();
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
-      setMessages((prevMessages) => [
-        ...prevMessages,
+      setMessages(prev => [
+        ...prev,
         { role: 'assistant', content: 'Ocorreu um erro. Tente novamente mais tarde.' },
       ]);
-      scrollToBottom();
     } finally {
       setLoading(false);
       setInput('');
+      scrollToBottom();
     }
   };
 
@@ -106,14 +156,6 @@ const ChatPage = () => {
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    if (isInitialLoad) scrollToBottom();
-  }, [messages, isInitialLoad]);
-
   const loadMoreMessages = useCallback(async () => {
     if (loading || !hasMore) return;
 
@@ -121,7 +163,7 @@ const ChatPage = () => {
     try {
       const olderMessages = await getChatHistory(sessionId, 10, earliestTimestamp);
       if (olderMessages.length > 0) {
-        setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
+        setMessages(prev => [...olderMessages, ...prev]);
         setEarliestTimestamp(olderMessages[0].timestamp);
         if (olderMessages.length < 10) setHasMore(false);
       } else {
@@ -141,7 +183,7 @@ const ChatPage = () => {
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && !loading) {
+    if (event.key === 'Enter' && !event.shiftKey && !loading) {
       event.preventDefault();
       handleSendMessage();
     }
@@ -168,93 +210,283 @@ const ChatPage = () => {
     </ReactMarkdown>
   );
 
+  const calculateProgress = () => {
+    if (!studyPlan?.topics) return 0;
+    
+    let totalProgress = 0;
+    studyPlan.topics.forEach(topic => {
+      totalProgress += topic.progress || 0;
+    });
+    
+    return Math.round(totalProgress / studyPlan.topics.length);
+  };
+
+  const StudyPlanPanel = () => (
+    <>
+      <Button
+        className="study-plan-toggle"
+        onClick={() => setIsStudyPlanOpen(!isStudyPlanOpen)}
+        startIcon={isStudyPlanOpen ? <CloseIcon /> : <MenuBookIcon />}
+      >
+        {isStudyPlanOpen ? 'Fechar Plano' : 'Plano de Estudos'}
+      </Button>
+
+      <Paper className={`study-plan-panel ${isStudyPlanOpen ? 'open' : ''}`}>
+        <div className="plan-header">
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MenuBookIcon />
+            Plano de Estudos
+          </Typography>
+          {studyPlan && (
+            <Typography variant="subtitle2" sx={{ mt: 1, color: 'var(--text-secondary)' }}>
+              {studyPlan.title}
+            </Typography>
+          )}
+        </div>
+
+        {loadingPlan ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : studyPlan ? (
+          <div className="study-plan-content">
+            <div className="progress-indicator">
+              <Typography variant="body2">
+                Progresso Total: {calculateProgress()}%
+              </Typography>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${calculateProgress()}%` }} 
+                />
+              </div>
+            </div>
+
+            <div className="plan-description">
+              <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
+                {studyPlan.description}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 3, color: 'var(--text-secondary)' }}>
+                <strong>Objetivo:</strong> {studyPlan.objective}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
+                Duração Total: {studyPlan.totalDuration}
+              </Typography>
+            </div>
+
+            {studyPlan.topics?.map((topic, index) => (
+              <div key={index} className="topic-item">
+                <div 
+                  className="topic-header"
+                  onClick={() => setExpandedSection(
+                    expandedSection === `topic-${index}` ? '' : `topic-${index}`
+                  )}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                    {topic.progress === 100 ? (
+                      <CheckCircleIcon sx={{ color: 'var(--success-color)' }} />
+                    ) : (
+                      <RadioButtonUncheckedIcon sx={{ color: 'var(--text-secondary)' }} />
+                    )}
+                    <Box>
+                      <Typography variant="subtitle1">
+                        {topic.title}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>
+                        {topic.duration}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <ExpandMoreIcon 
+                    sx={{ 
+                      transform: expandedSection === `topic-${index}` ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.3s ease'
+                    }} 
+                  />
+                </div>
+
+                <Collapse in={expandedSection === `topic-${index}`}>
+                  <div className="topic-content">
+                    <Typography variant="body2" sx={{ p: 2, color: 'var(--text-secondary)' }}>
+                      {topic.description}
+                    </Typography>
+
+                    <div className="subtopic-list">
+                      {topic.subtopics?.map((subtopic, subIndex) => (
+                        <div key={subIndex} className="subtopic-item">
+                          {subtopic.completed ? (
+                            <CheckCircleIcon 
+                              fontSize="small" 
+                              sx={{ color: 'var(--success-color)' }} 
+                            />
+                          ) : (
+                            <RadioButtonUncheckedIcon 
+                              fontSize="small" 
+                              sx={{ color: 'var(--text-secondary)' }} 
+                            />
+                          )}
+                          <Typography variant="body2" sx={{ 
+                            color: subtopic.completed ? 
+                              'var(--success-color)' : 
+                              'var(--text-primary)'
+                          }}>
+                            {subtopic.title}
+                          </Typography>
+                        </div>
+                      ))}
+                    </div>
+
+                    {topic.resources && topic.resources.length > 0 && (
+                      <div className="resources-section">
+                        <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
+                          Recursos
+                        </Typography>
+                        {topic.resources.map((resource, resIndex) => (
+                          <Typography 
+                            key={resIndex} 
+                            variant="body2" 
+                            sx={{ pl: 3, color: 'var(--text-secondary)' }}
+                          >
+                            • {resource.tipo}: {resource.descricao}
+                          </Typography>
+                        ))}
+                      </div>
+                    )}
+
+                    {topic.activity && (
+                      <div className="activity-section">
+                        <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
+                          Atividade
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ pl: 3, color: 'var(--text-secondary)' }}
+                        >
+                          {topic.activity.descricao}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ pl: 3, display: 'block', mt: 1, color: 'var(--text-secondary)' }}
+                        >
+                          Tipo: {topic.activity.tipo}
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
+                </Collapse>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Box sx={{ p: 2, textAlign: 'center', color: 'var(--text-secondary)' }}>
+            <Typography>Nenhum plano de estudos encontrado</Typography>
+          </Box>
+        )}
+      </Paper>
+    </>
+  );
+
   return (
     <div className="chat-page-container">
-      <Sidebar className="sidebar" />
-      <div className="chat-page-content">
-        <Box className="chat-container">
-          <Typography variant="h5" className="chat-header">
-            Chat da Sessão {sessionId} - Disciplina {disciplineId}
-          </Typography>
+      <Sidebar />
+      <div className="chat-content-wrapper">
+        <div className="chat-page-content">
+          <Box className="chat-container">
+            <Typography variant="h5" className="chat-header">
+              Chat da Sessão {sessionId} - Disciplina {disciplineId}
+            </Typography>
 
-          {sessionDetails && (
-            <Box className="session-details">
-              <Typography variant="subtitle1">Assunto: {sessionDetails.Assunto}</Typography>
-            </Box>
-          )}
-
-          <Box
-            className="chat-messages"
-            ref={messagesContainerRef}
-            onScroll={handleScroll}
-            sx={{ overflowY: 'auto', flexGrow: 1, display: 'flex', flexDirection: 'column' }}
-          >
-            {hasMore && (
-              <Box sx={{ textAlign: 'center', padding: '10px' }}>
-                {loading ? <CircularProgress size={24} /> : <Button onClick={loadMoreMessages}>Carregar mais</Button>}
+            {sessionDetails && (
+              <Box className="session-details">
+                <Typography variant="subtitle1">
+                  Assunto: {sessionDetails.Assunto}
+                </Typography>
               </Box>
             )}
-            {messages.map((msg, index) => (
-              <ListItem
-                key={index}
-                className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
-                sx={{ marginBottom: '5px' }} // Espaçamento ajustado aqui
-              >
-                {msg.role === 'assistant' && (
-                  <ListItemAvatar>
-                    <Avatar sx={{ width: 40, height: 40 }} src={BotImage} alt="Assistente" />
-                  </ListItemAvatar>
-                )}
-                <Box
-                  sx={{
-                    backgroundColor: msg.role === 'user' ? '#1976d2' : '#e0e0e0',
-                    color: msg.role === 'user' ? '#fff' : '#000',
-                    padding: '10px 15px',
-                    borderRadius: '15px',
-                    maxWidth: '80%',
-                    wordWrap: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                    fontSize: '16px',
-                    lineHeight: '1.4',
-                  }}
-                >
-                  {renderMessageContent(msg.content)}
-                </Box>
-              </ListItem>
-            ))}
-            <div ref={messagesEndRef} />
-          </Box>
 
-          <Box className="chat-input-container" sx={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
-            {file && (
-              <Chip
-                label={file.name}
-                onDelete={removeFile}
-                color="primary"
-                sx={{ marginBottom: '10px', textAlign: 'left' }}
-              />
-            )}
-            <Box sx={{ display: 'flex' }}>
-              <IconButton color="primary" onClick={handleAttachClick} sx={{ marginRight: '10px' }}>
-                <AttachFileIcon />
-              </IconButton>
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-              <TextField
-                variant="outlined"
-                placeholder="Digite uma mensagem..."
-                fullWidth
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-                sx={{ backgroundColor: '#fff', borderRadius: '8px' }}
-              />
-              <Button variant="contained" color="primary" onClick={handleSendMessage} disabled={loading} sx={{ marginLeft: '10px' }}>
-                <SendIcon />
-              </Button>
+<Box
+              className="chat-messages"
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+            >
+              {hasMore && (
+                <Box sx={{ textAlign: 'center', p: 1 }}>
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Button onClick={loadMoreMessages} variant="text" color="primary">
+                      Carregar mais
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {messages.map((msg, index) => (
+                <ListItem
+                  key={index}
+                  className={`chat-message ${msg.role}`}
+                >
+                  {msg.role === 'assistant' && (
+                    <ListItemAvatar>
+                      <Avatar src={BotImage} alt="Assistente" />
+                    </ListItemAvatar>
+                  )}
+                  <Box className="message-content">
+                    {renderMessageContent(msg.content)}
+                  </Box>
+                </ListItem>
+              ))}
+              <div ref={messagesEndRef} />
+            </Box>
+
+            <Box className="chat-input-container">
+              {file && (
+                <Chip
+                  label={file.name}
+                  onDelete={removeFile}
+                  color="primary"
+                  className="file-chip"
+                />
+              )}
+              <Box className="chat-input-wrapper">
+                <IconButton
+                  className="file-button"
+                  onClick={handleAttachClick}
+                  disabled={loading}
+                >
+                  <AttachFileIcon />
+                </IconButton>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileUpload}
+                />
+                <TextField
+                  className="chat-input-field"
+                  variant="outlined"
+                  placeholder="Digite sua mensagem..."
+                  fullWidth
+                  multiline
+                  maxRows={4}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                />
+                <Button
+                  className="send-button"
+                  variant="contained"
+                  onClick={handleSendMessage}
+                  disabled={loading}
+                >
+                  <SendIcon />
+                </Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
+        </div>
+        <StudyPlanPanel />
       </div>
     </div>
   );

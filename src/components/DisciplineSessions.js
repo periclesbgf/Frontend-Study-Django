@@ -1,5 +1,3 @@
-// src/components/DisciplineSessions.js
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,8 +15,18 @@ import {
   Select,
   CircularProgress,
   Chip,
+  Box,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Cancel as CancelIcon } from '@mui/icons-material';
+import {
+  Add as AddIcon,
+  Cancel as CancelIcon,
+  CloudUpload as UploadIcon,
+  School as SchoolIcon,
+  Description as DescriptionIcon,
+  AccessTime as TimeIcon,
+} from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import '../styles/DisciplineSessions.css';
 import {
@@ -30,7 +38,6 @@ import {
 
 const DisciplineSessions = () => {
   const navigate = useNavigate();
-
   const [disciplines, setDisciplines] = useState([]);
   const [openDisciplineModal, setOpenDisciplineModal] = useState(false);
   const [newDisciplineName, setNewDisciplineName] = useState('');
@@ -40,8 +47,8 @@ const DisciplineSessions = () => {
   const [educators, setEducators] = useState([]);
   const [selectedEducator, setSelectedEducator] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadHover, setUploadHover] = useState(false);
 
-  // Função para carregar disciplinas
   const loadDisciplines = async () => {
     setLoading(true);
     try {
@@ -54,27 +61,24 @@ const DisciplineSessions = () => {
     }
   };
 
-  // Função para carregar os professores
   const loadEducators = async () => {
-    setLoading(true);
     try {
       const response = await getAllEducators();
       setEducators(response.educators || []);
     } catch (error) {
       console.error('Erro ao carregar professores', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Carrega as disciplinas e professores ao montar o componente
   useEffect(() => {
     loadDisciplines();
     loadEducators();
   }, []);
 
-  // Função para criar uma nova disciplina
   const createNewDiscipline = async () => {
+    if (!newDisciplineName.trim()) return;
+    
+    setLoading(true);
     try {
       if (pdfFile) {
         await uploadDisciplinePDF(pdfFile);
@@ -85,85 +89,127 @@ const DisciplineSessions = () => {
           objetivos: newDisciplineObjetivos,
           professorId: selectedEducator || null,
         });
-        setDisciplines([...disciplines, newDiscipline]);
+        setDisciplines(prev => [...prev, newDiscipline]);
       }
-      // Limpar os campos
-      setNewDisciplineName('');
-      setNewDisciplineEmenta('');
-      setNewDisciplineObjetivos('');
-      setSelectedEducator('');
-      setOpenDisciplineModal(false);
-      setPdfFile(null);
+      handleCloseModal();
     } catch (error) {
-      console.error('Erro ao criar nova disciplina:', error);
+      console.error('Erro ao criar disciplina:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Função para lidar com o upload de arquivos
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    setPdfFile(file);
+  const handleCloseModal = () => {
+    setOpenDisciplineModal(false);
+    setNewDisciplineName('');
+    setNewDisciplineEmenta('');
+    setNewDisciplineObjetivos('');
+    setSelectedEducator('');
+    setPdfFile(null);
   };
 
-  // Função para lidar com o clique na disciplina
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+    }
+  };
+
   const handleDisciplineClick = (disciplineId) => {
     navigate(`/study_sessions/${disciplineId}`);
   };
 
-  // Função para limpar o professor selecionado
-  const handleDeleteEducator = () => {
-    setSelectedEducator('');
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setUploadHover(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setUploadHover(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setUploadHover(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+    }
   };
 
   return (
     <div className="discipline-sessions-container">
       <Sidebar />
       <div className="discipline-sessions-content">
-        <Typography variant="h3" align="center" gutterBottom>
+        <Typography variant="h3" align="center" className="page-title">
           Disciplinas
         </Typography>
 
-        <div className="discipline-actions" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div className="discipline-actions">
           <Button
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => setOpenDisciplineModal(true)}
+            className="add-button"
           >
             Nova Disciplina
           </Button>
         </div>
 
-        <div className="discipline-list">
-          {loading ? (
-            <Typography variant="body1" align="center">
-              Carregando disciplinas...
-            </Typography>
-          ) : disciplines.length > 0 ? (
-            disciplines.map((discipline) => (
-              <Card
-                key={discipline.IdCurso}
-                className="card"
-                onClick={() => handleDisciplineClick(discipline.IdCurso)}
-              >
-                <CardContent className="card-content">
-                  <Typography className="card-title">{discipline.NomeCurso}</Typography>
-                  <Typography className="card-description">
-                    {discipline.Ementa ? discipline.Ementa : 'Sem descrição disponível'}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Typography variant="body1" align="center">
-              Nenhuma disciplina encontrada.
-            </Typography>
-          )}
-        </div>
+        {loading ? (
+          <div className="loading-container">
+            <CircularProgress />
+          </div>
+        ) : (
+          <div className="discipline-list">
+            {disciplines.length > 0 ? (
+              disciplines.map((discipline) => (
+                <Card
+                  key={discipline.IdCurso}
+                  className="discipline-card"
+                  onClick={() => handleDisciplineClick(discipline.IdCurso)}
+                >
+                  <CardContent className="card-content">
+                    <Box className="card-header">
+                      <SchoolIcon className="card-icon" />
+                      <Typography className="card-title">
+                        {discipline.NomeCurso}
+                      </Typography>
+                    </Box>
+                    <Typography className="card-description">
+                      {discipline.Ementa || 'Sem descrição disponível'}
+                    </Typography>
+                    <Box className="card-footer">
+                      <Tooltip title="Última atualização">
+                        <Box className="card-update">
+                          <TimeIcon fontSize="small" />
+                          <Typography variant="caption">
+                            {new Date(discipline.DataCriacao).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography className="no-disciplines">
+                Nenhuma disciplina encontrada
+              </Typography>
+            )}
+          </div>
+        )}
 
-        {/* Modal para criar nova disciplina */}
-        <Dialog open={openDisciplineModal} onClose={() => setOpenDisciplineModal(false)}>
-          <DialogTitle>Criar Nova Disciplina</DialogTitle>
+        <Dialog 
+          open={openDisciplineModal} 
+          onClose={handleCloseModal}
+          className="discipline-modal"
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Nova Disciplina</DialogTitle>
           <DialogContent>
             <TextField
               label="Nome da Disciplina"
@@ -172,84 +218,96 @@ const DisciplineSessions = () => {
               value={newDisciplineName}
               onChange={(e) => setNewDisciplineName(e.target.value)}
               disabled={pdfFile !== null}
+              className="modal-input"
             />
+            
             <TextField
               label="Ementa"
               fullWidth
               margin="normal"
+              multiline
+              rows={3}
               value={newDisciplineEmenta}
               onChange={(e) => setNewDisciplineEmenta(e.target.value)}
               disabled={pdfFile !== null}
+              className="modal-input"
             />
+
             <TextField
               label="Objetivos"
               fullWidth
               margin="normal"
+              multiline
+              rows={3}
               value={newDisciplineObjetivos}
               onChange={(e) => setNewDisciplineObjetivos(e.target.value)}
               disabled={pdfFile !== null}
+              className="modal-input"
             />
 
-            {/* Dropdown de Professores */}
-            <InputLabel>Professor</InputLabel>
-            {loading ? (
-              <CircularProgress />
-            ) : (
+            <Box className="educator-select">
+              <InputLabel>Professor</InputLabel>
               <Select
                 fullWidth
                 value={selectedEducator}
                 onChange={(e) => setSelectedEducator(e.target.value)}
+                disabled={pdfFile !== null}
               >
-                {educators.length > 0 ? (
-                  educators.map((educator, index) => (
-                    <MenuItem key={index} value={educator}>
-                      {educator}
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem disabled>Nenhum professor encontrado</MenuItem>
-                )}
+                {educators.map((educator, index) => (
+                  <MenuItem key={index} value={educator}>
+                    {educator}
+                  </MenuItem>
+                ))}
               </Select>
-            )}
+            </Box>
 
-            {/* Exibe o Chip do professor selecionado */}
             {selectedEducator && (
-              <div style={{ marginTop: '10px' }}>
+              <Box className="selected-educator">
                 <Chip
                   label={selectedEducator}
-                  onDelete={handleDeleteEducator}
+                  onDelete={() => setSelectedEducator('')}
                   deleteIcon={<CancelIcon />}
-                  sx={{
-                    backgroundColor: '#f0f0f0',
-                    color: '#000',
-                    fontWeight: 'bold',
-                    '.MuiChip-label': { color: '#000 !important' },
-                  }}
                 />
-              </div>
+              </Box>
             )}
 
-            <InputLabel style={{ marginTop: '20px' }}>
-              Ou carregue o arquivo PDF da EMENTA do curso
-            </InputLabel>
-            <Button variant="contained" component="label">
-              Upload PDF
-              <input type="file" hidden accept="application/pdf" onChange={handleFileUpload} />
-            </Button>
-
-            {/* Exibe o nome do arquivo após o upload */}
-            {pdfFile && (
-              <Typography variant="body2" style={{ marginTop: '10px', color: '#000' }}>
-                {pdfFile.name}
-              </Typography>
-            )}
+            <Box 
+              className={`upload-area ${uploadHover ? 'drag-over' : ''} ${pdfFile ? 'has-file' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                id="pdf-upload"
+                hidden
+                accept="application/pdf"
+                onChange={handleFileUpload}
+              />
+              <label htmlFor="pdf-upload">
+                <Box className="upload-content">
+                  <UploadIcon className="upload-icon" />
+                  <Typography>
+                    {pdfFile ? pdfFile.name : 'Arraste ou clique para fazer upload da ementa em PDF'}
+                  </Typography>
+                </Box>
+              </label>
+            </Box>
           </DialogContent>
+
           <DialogActions>
-            <Button onClick={() => setOpenDisciplineModal(false)} color="secondary">
+            <Button 
+              onClick={handleCloseModal}
+              color="error"
+            >
               Cancelar
             </Button>
-            <Button onClick={createNewDiscipline} color="primary">
-              Criar
+            <Button
+              onClick={createNewDiscipline}
+              variant="contained"
+              disabled={loading || (!newDisciplineName && !pdfFile)}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Criar'}
             </Button>
           </DialogActions>
         </Dialog>
