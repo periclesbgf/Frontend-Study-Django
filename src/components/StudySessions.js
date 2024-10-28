@@ -74,6 +74,9 @@ const StudySessions = () => {
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [loadingSessionsWithoutPlan, setLoadingSessionsWithoutPlan] = useState(false);
 
+  // Estado para o período de estudo
+  const [studyPeriod, setStudyPeriod] = useState(''); // Período de estudo (manhã, tarde ou noite)
+
   // Estados para mensagens de erro
   const [error, setError] = useState(null);
 
@@ -130,23 +133,25 @@ const StudySessions = () => {
     setOpenAutoplanModal(true);
   };
 
+  // Função handleGenerateAutoPlan atualizada
   const handleGenerateAutoPlan = async () => {
     if (!selectedSessionId) return;
-  
+
     setGeneratingPlan(true);
     try {
       const selectedSession = sessionsWithoutPlan.find(
         (session) => session.id_sessao === selectedSessionId
       );
-  
+
       if (!selectedSession) throw new Error('Sessão não encontrada');
-  
+
       const result = await createAutomaticStudyPlan(disciplineId, {
         session_id: selectedSessionId,
         descricao: selectedSession.Assunto,
-        duracao: autoplanDuration, // Agora no formato HH:mm
+        duracao: autoplanDuration,
+        periodo: studyPeriod, // Inclui o período selecionado na requisição
       });
-  
+
       setGeneratedPlan(result.plano);
       setError(null);
       await loadStudySessions();
@@ -158,7 +163,7 @@ const StudySessions = () => {
       setGeneratingPlan(false);
     }
   };
-  
+
   // Handler para criação manual de sessão
   const handleCreateSession = async () => {
     try {
@@ -220,7 +225,8 @@ const StudySessions = () => {
   const handleCloseAutoplanModal = () => {
     setOpenAutoplanModal(false);
     setSelectedSessionId('');
-    setAutoplanDuration('60 minutos');
+    setAutoplanDuration('60');
+    setStudyPeriod(''); // Reseta o período de estudo
     setGeneratedPlan(null);
     setError(null);
   };
@@ -264,13 +270,13 @@ const StudySessions = () => {
               startIcon={<AutoAwesomeIcon />}
               onClick={handleOpenAutoplanModal}
               size="large"
-              sx={{ 
-                px: 4, 
+              sx={{
+                px: 4,
                 py: 1.5,
                 backgroundColor: '#5865F2',
                 '&:hover': {
-                  backgroundColor: '#4752C4'
-                }
+                  backgroundColor: '#4752C4',
+                },
               }}
             >
               Gerar Plano Automático
@@ -311,14 +317,14 @@ const StudySessions = () => {
                       <IconButton
                         onClick={() => handleEditSession(session.IdSessao)}
                         color="primary"
-                        sx={{ 
-                          position: 'absolute', 
-                          top: 8, 
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
                           right: 8,
                           color: '#5865F2',
                           '&:hover': {
-                            backgroundColor: 'rgba(88, 101, 242, 0.1)'
-                          }
+                            backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                          },
                         }}
                       >
                         <EditIcon />
@@ -357,12 +363,12 @@ const StudySessions = () => {
                     <LinearProgress
                       variant="determinate"
                       value={session.Produtividade || 0}
-                      sx={{ 
+                      sx={{
                         height: 8,
                         backgroundColor: '#40444b',
                         '& .MuiLinearProgress-bar': {
-                          backgroundColor: '#5865F2'
-                        }
+                          backgroundColor: '#5865F2',
+                        },
                       }}
                     />
                   </Card>
@@ -389,11 +395,13 @@ const StudySessions = () => {
             },
           }}
         >
-          <DialogTitle sx={{ 
-            backgroundColor: '#2f3136',
-            color: '#ffffff',
-            borderBottom: '1px solid #4f545c'
-          }}>
+          <DialogTitle
+            sx={{
+              backgroundColor: '#2f3136',
+              color: '#ffffff',
+              borderBottom: '1px solid #4f545c',
+            }}
+          >
             Gerar Plano de Estudos Personalizado
           </DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
@@ -405,131 +413,150 @@ const StudySessions = () => {
                 </Typography>
               </Box>
             ) : sessionsWithoutPlan.length === 0 ? (
-              <Alert 
-                severity="info" 
-                sx={{ 
+              <Alert
+                severity="info"
+                sx={{
                   mt: 2,
                   backgroundColor: '#4f545c',
                   color: '#ffffff',
                   '& .MuiAlert-icon': {
-                    color: '#ffffff'
-                  }
+                    color: '#ffffff',
+                  },
                 }}
               >
                 Todas as suas sessões já possuem planos de estudo.
               </Alert>
             ) : (
               <>
-              <FormControl fullWidth margin="normal">
-                <InputLabel sx={{ color: '#b9bbbe' }}>Selecione a Sessão</InputLabel>
-                <Select
-                  value={selectedSessionId}
-                  onChange={(e) => setSelectedSessionId(e.target.value)}
-                  label="Selecione a Sessão"
-                  sx={{
-                    backgroundColor: '#40444b',
-                    color: '#ffffff',
-                    '& .MuiSelect-icon': {
-                      color: '#b9bbbe'
+                <FormControl fullWidth margin="normal">
+                  <InputLabel sx={{ color: '#b9bbbe' }}>Selecione a Sessão</InputLabel>
+                  <Select
+                    value={selectedSessionId}
+                    onChange={(e) => setSelectedSessionId(e.target.value)}
+                    label="Selecione a Sessão"
+                    sx={{
+                      backgroundColor: '#40444b',
+                      color: '#ffffff',
+                      '& .MuiSelect-icon': {
+                        color: '#b9bbbe',
+                      },
+                    }}
+                  >
+                    {sessionsWithoutPlan.map((session) => (
+                      <MenuItem
+                        key={session.id_sessao}
+                        value={session.id_sessao}
+                        sx={{
+                          backgroundColor: '#40444b',
+                          color: '#ffffff',
+                          '&:hover': {
+                            backgroundColor: '#45494f',
+                          },
+                        }}
+                      >
+                        <Box>
+                          <Typography sx={{ color: '#ffffff' }}>{session.Assunto}</Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText sx={{ color: '#b9bbbe' }}>
+                    Selecione uma sessão para gerar o plano de estudos
+                  </FormHelperText>
+                </FormControl>
+
+                {/* Dropdown para selecionar o período de estudo */}
+                <FormControl fullWidth margin="normal">
+                  <InputLabel sx={{ color: '#b9bbbe' }}>Preferencia de Estudo</InputLabel>
+                  <Select
+                    value={studyPeriod}
+                    onChange={(e) => setStudyPeriod(e.target.value)}
+                    label="Período de Estudo"
+                    sx={{
+                      backgroundColor: '#40444b',
+                      color: '#ffffff',
+                      '& .MuiSelect-icon': {
+                        color: '#b9bbbe',
+                      },
+                    }}
+                  >
+                    <MenuItem value="manhã">Manhã</MenuItem>
+                    <MenuItem value="tarde">Tarde</MenuItem>
+                    <MenuItem value="noite">Noite</MenuItem>
+                  </Select>
+                  <FormHelperText sx={{ color: '#b9bbbe' }}>
+                    Selecione o período desejado
+                  </FormHelperText>
+                </FormControl>
+
+                {/* Campo de Duração Desejada */}
+                <TextField
+                  label="Duração Desejada (em minutos)"
+                  fullWidth
+                  margin="normal"
+                  value={autoplanDuration}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setAutoplanDuration(value); // Atualiza apenas se for numérico
                     }
                   }}
-                >
-                  {sessionsWithoutPlan.map((session) => (
-                    <MenuItem 
-                      key={session.id_sessao} 
-                      value={session.id_sessao}
-                      sx={{
-                        backgroundColor: '#40444b',
-                        color: '#ffffff',
-                        '&:hover': {
-                          backgroundColor: '#45494f'
-                        }
-                      }}
-                    >
-                      <Box>
-                        <Typography sx={{ color: '#ffffff' }}>
-                          {session.Assunto}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FormHelperText sx={{ color: '#b9bbbe' }}>
-                  Selecione uma sessão para gerar o plano de estudos
-                </FormHelperText>
-              </FormControl>
-              <TextField
-                label="Duração Desejada (em minutos)"
-                fullWidth
-                margin="normal"
-                value={autoplanDuration}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (/^\d*$/.test(value)) {
-                    setAutoplanDuration(value); // Atualiza apenas se for numérico
-                  }
-                }}
-                helperText="Insira a duração em minutos (ex: 60, 90)"
-                inputProps={{
-                  inputMode: 'numeric', // Força teclado numérico em dispositivos móveis
-                  pattern: '[0-9]*', // Aceita apenas dígitos
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#40444b',
-                    color: '#ffffff',
-                    '& fieldset': {
-                      borderColor: '#4f545c',
+                  helperText="Insira a duração em minutos (ex: 60, 90)"
+                  inputProps={{
+                    inputMode: 'numeric', // Força teclado numérico em dispositivos móveis
+                    pattern: '[0-9]*', // Aceita apenas dígitos
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#40444b',
+                      color: '#ffffff',
+                      '& fieldset': {
+                        borderColor: '#4f545c',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#5865F2',
+                      },
                     },
-                    '&:hover fieldset': {
-                      borderColor: '#5865F2',
+                    '& .MuiInputLabel-root': {
+                      color: '#b9bbbe',
                     },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: '#b9bbbe',
-                  },
-                  '& .MuiFormHelperText-root': {
-                    color: '#b9bbbe',
-                  },
-                }}
-              />
-
+                    '& .MuiFormHelperText-root': {
+                      color: '#b9bbbe',
+                    },
+                  }}
+                />
               </>
             )}
             {generatingPlan && (
               <Box sx={{ width: '100%', mt: 2 }}>
-                <LinearProgress sx={{ 
-                  backgroundColor: '#40444b',
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: '#5865F2'
-                  }
-                }} />
+                <LinearProgress
+                  sx={{
+                    backgroundColor: '#40444b',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: '#5865F2',
+                    },
+                  }}
+                />
                 <Typography variant="body2" align="center" sx={{ mt: 1, color: '#b9bbbe' }}>
                   Gerando seu plano personalizado...
                 </Typography>
               </Box>
             )}
             {generatedPlan && (
-              <Box sx={{ 
-                mt: 3, 
-                p: 3, 
-                bgcolor: '#2f3136', 
-                borderRadius: 2,
-                border: '1px solid #4f545c',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-              }}>
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ color: '#ffffff' }}
-                >
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 3,
+                  bgcolor: '#2f3136',
+                  borderRadius: 2,
+                  border: '1px solid #4f545c',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                }}
+              >
+                <Typography variant="h6" gutterBottom sx={{ color: '#ffffff' }}>
                   Plano de Estudos Gerado
                 </Typography>
-                <Typography
-                  variant="body2"
-                  gutterBottom
-                  sx={{ color: '#b9bbbe' }}
-                >
+                <Typography variant="body2" gutterBottom sx={{ color: '#b9bbbe' }}>
                   Duração Total: {generatedPlan.duracao_total}
                 </Typography>
                 <Divider sx={{ my: 2, borderColor: '#4f545c' }} />
@@ -543,8 +570,8 @@ const StudySessions = () => {
                       borderRadius: 1,
                       border: '1px solid #4f545c',
                       '&:hover': {
-                        bgcolor: '#40444b'
-                      }
+                        bgcolor: '#40444b',
+                      },
                     }}
                   >
                     <Typography
@@ -554,20 +581,22 @@ const StudySessions = () => {
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1
+                        gap: 1,
                       }}
                     >
-                      <span style={{
-                        backgroundColor: '#5865F2',
-                        color: 'white',
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.8rem'
-                      }}>
+                      <span
+                        style={{
+                          backgroundColor: '#5865F2',
+                          color: 'white',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.8rem',
+                        }}
+                      >
                         {index + 1}
                       </span>
                       {step.titulo} ({step.duracao})
@@ -576,39 +605,43 @@ const StudySessions = () => {
                       variant="body2"
                       sx={{
                         mt: 1,
-                        color: '#dcddde'
+                        color: '#dcddde',
                       }}
                     >
                       {step.descricao}
                     </Typography>
                     {step.recursos && step.recursos.length > 0 && (
-                      <Box sx={{
-                        mt: 2,
-                        bgcolor: '#2f3136',
-                        p: 2,
-                        borderRadius: 1
-                      }}>
+                      <Box
+                        sx={{
+                          mt: 2,
+                          bgcolor: '#2f3136',
+                          p: 2,
+                          borderRadius: 1,
+                        }}
+                      >
                         <Typography
                           variant="body2"
                           sx={{
                             color: '#b9bbbe',
                             fontWeight: 500,
-                            mb: 1
+                            mb: 1,
                           }}
                         >
                           Recursos:
                         </Typography>
-                        <ul style={{
-                          marginTop: 4,
-                          paddingLeft: '20px',
-                          listStyle: 'none'
-                        }}>
+                        <ul
+                          style={{
+                            marginTop: 4,
+                            paddingLeft: '20px',
+                            listStyle: 'none',
+                          }}
+                        >
                           {step.recursos.map((recurso, idx) => (
                             <li
                               key={idx}
                               style={{
                                 marginBottom: '8px',
-                                position: 'relative'
+                                position: 'relative',
                               }}
                             >
                               <Typography
@@ -622,8 +655,8 @@ const StudySessions = () => {
                                     color: '#5865F2',
                                     position: 'absolute',
                                     left: '-15px',
-                                    fontSize: '1.2rem'
-                                  }
+                                    fontSize: '1.2rem',
+                                  },
                                 }}
                               >
                                 <strong style={{ color: '#b9bbbe' }}>{recurso.tipo}:</strong>
@@ -639,17 +672,19 @@ const StudySessions = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{ 
-            borderTop: '1px solid #4f545c',
-            padding: '16px 24px'
-          }}>
+          <DialogActions
+            sx={{
+              borderTop: '1px solid #4f545c',
+              padding: '16px 24px',
+            }}
+          >
             <Button
               onClick={handleCloseAutoplanModal}
-              sx={{ 
+              sx={{
                 color: '#b9bbbe',
                 '&:hover': {
-                  backgroundColor: 'rgba(185, 187, 190, 0.1)'
-                }
+                  backgroundColor: 'rgba(185, 187, 190, 0.1)',
+                },
               }}
             >
               Fechar
@@ -661,20 +696,21 @@ const StudySessions = () => {
               sx={{
                 backgroundColor: '#5865F2',
                 '&:hover': {
-                  backgroundColor: '#4752C4'
+                  backgroundColor: '#4752C4',
                 },
                 '&.Mui-disabled': {
-                  backgroundColor: '#40444b'
-                }
+                  backgroundColor: '#40444b',
+                },
               }}
             >
               {generatingPlan ? 'Gerando...' : 'Gerar Plano'}
             </Button>
           </DialogActions>
         </Dialog>
-{/* Modal de Criação Manual de Sessão */}
-<Dialog 
-          open={openCreateModal} 
+
+        {/* Modal de Criação Manual de Sessão */}
+        <Dialog
+          open={openCreateModal}
           onClose={() => setOpenCreateModal(false)}
           PaperProps={{
             style: {
@@ -683,11 +719,13 @@ const StudySessions = () => {
             },
           }}
         >
-          <DialogTitle sx={{ 
-            backgroundColor: '#2f3136',
-            color: '#ffffff',
-            borderBottom: '1px solid #4f545c'
-          }}>
+          <DialogTitle
+            sx={{
+              backgroundColor: '#2f3136',
+              color: '#ffffff',
+              borderBottom: '1px solid #4f545c',
+            }}
+          >
             Criar Nova Sessão de Estudo
           </DialogTitle>
           <DialogContent>
@@ -768,17 +806,19 @@ const StudySessions = () => {
               }}
             />
           </DialogContent>
-          <DialogActions sx={{ 
-            borderTop: '1px solid #4f545c',
-            padding: '16px 24px'
-          }}>
-            <Button 
+          <DialogActions
+            sx={{
+              borderTop: '1px solid #4f545c',
+              padding: '16px 24px',
+            }}
+          >
+            <Button
               onClick={() => setOpenCreateModal(false)}
-              sx={{ 
+              sx={{
                 color: '#b9bbbe',
                 '&:hover': {
-                  backgroundColor: 'rgba(185, 187, 190, 0.1)'
-                }
+                  backgroundColor: 'rgba(185, 187, 190, 0.1)',
+                },
               }}
             >
               Cancelar
@@ -790,11 +830,11 @@ const StudySessions = () => {
               sx={{
                 backgroundColor: '#5865F2',
                 '&:hover': {
-                  backgroundColor: '#4752C4'
+                  backgroundColor: '#4752C4',
                 },
                 '&.Mui-disabled': {
-                  backgroundColor: '#40444b'
-                }
+                  backgroundColor: '#40444b',
+                },
               }}
             >
               Criar
@@ -803,8 +843,8 @@ const StudySessions = () => {
         </Dialog>
 
         {/* Modal de Edição de Sessão */}
-        <Dialog 
-          open={openEditModal} 
+        <Dialog
+          open={openEditModal}
           onClose={() => setOpenEditModal(false)}
           PaperProps={{
             style: {
@@ -813,11 +853,13 @@ const StudySessions = () => {
             },
           }}
         >
-          <DialogTitle sx={{ 
-            backgroundColor: '#2f3136',
-            color: '#ffffff',
-            borderBottom: '1px solid #4f545c'
-          }}>
+          <DialogTitle
+            sx={{
+              backgroundColor: '#2f3136',
+              color: '#ffffff',
+              borderBottom: '1px solid #4f545c',
+            }}
+          >
             Editar Sessão de Estudo
           </DialogTitle>
           <DialogContent>
@@ -922,17 +964,19 @@ const StudySessions = () => {
               }}
             />
           </DialogContent>
-          <DialogActions sx={{ 
-            borderTop: '1px solid #4f545c',
-            padding: '16px 24px'
-          }}>
-            <Button 
+          <DialogActions
+            sx={{
+              borderTop: '1px solid #4f545c',
+              padding: '16px 24px',
+            }}
+          >
+            <Button
               onClick={() => setOpenEditModal(false)}
-              sx={{ 
+              sx={{
                 color: '#b9bbbe',
                 '&:hover': {
-                  backgroundColor: 'rgba(185, 187, 190, 0.1)'
-                }
+                  backgroundColor: 'rgba(185, 187, 190, 0.1)',
+                },
               }}
             >
               Cancelar
@@ -944,11 +988,11 @@ const StudySessions = () => {
               sx={{
                 backgroundColor: '#5865F2',
                 '&:hover': {
-                  backgroundColor: '#4752C4'
+                  backgroundColor: '#4752C4',
                 },
                 '&.Mui-disabled': {
-                  backgroundColor: '#40444b'
-                }
+                  backgroundColor: '#40444b',
+                },
               }}
             >
               Salvar Alterações
@@ -957,12 +1001,14 @@ const StudySessions = () => {
         </Dialog>
 
         {/* Footer Actions */}
-        <Box sx={{ 
-          mt: 4, 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: 2 
-        }}>
+        <Box
+          sx={{
+            mt: 4,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -970,8 +1016,8 @@ const StudySessions = () => {
             sx={{
               backgroundColor: '#5865F2',
               '&:hover': {
-                backgroundColor: '#4752C4'
-              }
+                backgroundColor: '#4752C4',
+              },
             }}
           >
             Criar Sessão Manual

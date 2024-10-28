@@ -18,6 +18,7 @@ import {
   Box,
   IconButton,
   Tooltip,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,11 +44,23 @@ const DisciplineSessions = () => {
   const [newDisciplineName, setNewDisciplineName] = useState('');
   const [newDisciplineEmenta, setNewDisciplineEmenta] = useState('');
   const [newDisciplineObjetivos, setNewDisciplineObjetivos] = useState('');
+  const [studyShift, setStudyShift] = useState('');
+  const [classStartTime, setClassStartTime] = useState('');
+  const [classEndTime, setClassEndTime] = useState('');
   const [pdfFile, setPdfFile] = useState(null);
   const [educators, setEducators] = useState([]);
   const [selectedEducator, setSelectedEducator] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadHover, setUploadHover] = useState(false);
+
+  const formatTimeForDisplay = (time) => {
+    if (!time) return '';
+    return new Date(`2000-01-01T${time}`).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
 
   const loadDisciplines = async () => {
     setLoading(true);
@@ -75,25 +88,55 @@ const DisciplineSessions = () => {
     loadEducators();
   }, []);
 
+  const validateForm = () => {
+    if (!studyShift || !classStartTime || !classEndTime) {
+      alert('Turno de estudo e horários da aula são obrigatórios');
+      return false;
+    }
+
+    if (!pdfFile && !newDisciplineName.trim()) {
+      alert('Forneça o nome da disciplina ou faça upload de um PDF');
+      return false;
+    }
+
+    // Validar se o horário de fim é posterior ao de início
+    const startTime = new Date(`2000-01-01T${classStartTime}`);
+    const endTime = new Date(`2000-01-01T${classEndTime}`);
+    if (endTime <= startTime) {
+      alert('O horário de fim deve ser posterior ao horário de início');
+      return false;
+    }
+
+    return true;
+  };
+
   const createNewDiscipline = async () => {
-    if (!newDisciplineName.trim()) return;
+    if (!validateForm()) return;
     
     setLoading(true);
     try {
-      if (pdfFile) {
-        await uploadDisciplinePDF(pdfFile);
-      } else {
-        const newDiscipline = await createDiscipline({
+      const disciplineData = {
+        studyShift,
+        classStartTime,
+        classEndTime,
+        ...(pdfFile ? { file: pdfFile } : {
           nomeCurso: newDisciplineName,
           ementa: newDisciplineEmenta,
           objetivos: newDisciplineObjetivos,
           professorId: selectedEducator || null,
-        });
+        })
+      };
+
+      if (pdfFile) {
+        await uploadDisciplinePDF(disciplineData);
+      } else {
+        const newDiscipline = await createDiscipline(disciplineData);
         setDisciplines(prev => [...prev, newDiscipline]);
       }
       handleCloseModal();
     } catch (error) {
       console.error('Erro ao criar disciplina:', error);
+      alert('Erro ao criar disciplina. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -104,14 +147,20 @@ const DisciplineSessions = () => {
     setNewDisciplineName('');
     setNewDisciplineEmenta('');
     setNewDisciplineObjetivos('');
+    setStudyShift('');
+    setClassStartTime('');
+    setClassEndTime('');
     setSelectedEducator('');
     setPdfFile(null);
+    setUploadHover(false);
   };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
       setPdfFile(file);
+    } else {
+      alert('Por favor, selecione um arquivo PDF');
     }
   };
 
@@ -135,7 +184,18 @@ const DisciplineSessions = () => {
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
       setPdfFile(file);
+    } else {
+      alert('Por favor, forneça um arquivo PDF');
     }
+  };
+
+  const getShiftLabel = (shift) => {
+    const shifts = {
+      'manha': 'Manhã',
+      'tarde': 'Tarde',
+      'noite': 'Noite'
+    };
+    return shifts[shift] || shift;
   };
 
   return (
@@ -178,18 +238,28 @@ const DisciplineSessions = () => {
                         {discipline.NomeCurso}
                       </Typography>
                     </Box>
-                    <Typography className="card-description">
-                      {discipline.Ementa || 'Sem descrição disponível'}
-                    </Typography>
+                    <Box className="card-info">
+                      <Typography className="card-description">
+                        {discipline.Ementa || 'Sem descrição disponível'}
+                      </Typography>
+                      <Box className="card-details">
+                        <Chip 
+                          icon={<TimeIcon />}
+                          label={getShiftLabel(discipline.studyShift)}
+                          className="info-chip shift-chip"
+                        />
+                        <Typography className="time-info">
+                          Aula: {formatTimeForDisplay(discipline.classStartTime)} às {formatTimeForDisplay(discipline.classEndTime)}
+                        </Typography>
+                      </Box>
+                    </Box>
                     <Box className="card-footer">
-                      <Tooltip title="Última atualização">
-                        <Box className="card-update">
-                          <TimeIcon fontSize="small" />
-                          <Typography variant="caption">
-                            {new Date(discipline.DataCriacao).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                      </Tooltip>
+                      <Box className="card-update">
+                        <TimeIcon fontSize="small" />
+                        <Typography variant="caption">
+                          {new Date(discipline.DataCriacao).toLocaleDateString('pt-BR')}
+                        </Typography>
+                      </Box>
                     </Box>
                   </CardContent>
                 </Card>
@@ -211,65 +281,120 @@ const DisciplineSessions = () => {
         >
           <DialogTitle>Nova Disciplina</DialogTitle>
           <DialogContent>
-            <TextField
-              label="Nome da Disciplina"
-              fullWidth
-              margin="normal"
-              value={newDisciplineName}
-              onChange={(e) => setNewDisciplineName(e.target.value)}
-              disabled={pdfFile !== null}
-              className="modal-input"
-            />
-            
-            <TextField
-              label="Ementa"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={3}
-              value={newDisciplineEmenta}
-              onChange={(e) => setNewDisciplineEmenta(e.target.value)}
-              disabled={pdfFile !== null}
-              className="modal-input"
-            />
+            <Box className="required-fields">
+              <Box className="shift-select">
+                <InputLabel>Turno de Estudo *</InputLabel>
+                <Select
+                  fullWidth
+                  value={studyShift}
+                  onChange={(e) => setStudyShift(e.target.value)}
+                  required
+                  className="modal-input"
+                >
+                  <MenuItem value="manha">Manhã</MenuItem>
+                  <MenuItem value="tarde">Tarde</MenuItem>
+                  <MenuItem value="noite">Noite</MenuItem>
+                </Select>
+              </Box>
 
-            <TextField
-              label="Objetivos"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={3}
-              value={newDisciplineObjetivos}
-              onChange={(e) => setNewDisciplineObjetivos(e.target.value)}
-              disabled={pdfFile !== null}
-              className="modal-input"
-            />
-
-            <Box className="educator-select">
-              <InputLabel>Professor</InputLabel>
-              <Select
-                fullWidth
-                value={selectedEducator}
-                onChange={(e) => setSelectedEducator(e.target.value)}
-                disabled={pdfFile !== null}
-              >
-                {educators.map((educator, index) => (
-                  <MenuItem key={index} value={educator}>
-                    {educator}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Box className="class-time">
+                <Typography variant="subtitle2" className="time-label">
+                  Horário da Aula *
+                </Typography>
+                <Box className="time-inputs">
+                  <TextField
+                    label="Início"
+                    type="time"
+                    value={classStartTime}
+                    onChange={(e) => setClassStartTime(e.target.value)}
+                    className="time-input"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      step: 300
+                    }}
+                    helperText={classStartTime ? `Horário: ${formatTimeForDisplay(classStartTime)}` : ''}
+                  />
+                  <TextField
+                    label="Fim"
+                    type="time"
+                    value={classEndTime}
+                    onChange={(e) => setClassEndTime(e.target.value)}
+                    className="time-input"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      step: 300
+                    }}
+                    helperText={classEndTime ? `Horário: ${formatTimeForDisplay(classEndTime)}` : ''}
+                  />
+                </Box>
+              </Box>
             </Box>
 
-            {selectedEducator && (
-              <Box className="selected-educator">
-                <Chip
-                  label={selectedEducator}
-                  onDelete={() => setSelectedEducator('')}
-                  deleteIcon={<CancelIcon />}
-                />
+            <Divider className="modal-divider" />
+
+            <Box className={`conditional-fields ${pdfFile ? 'disabled' : ''}`}>
+              <TextField
+                label="Nome da Disciplina"
+                fullWidth
+                margin="normal"
+                value={newDisciplineName}
+                onChange={(e) => setNewDisciplineName(e.target.value)}
+                disabled={pdfFile !== null}
+                className="modal-input"
+              />
+              
+              <TextField
+                label="Ementa"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                value={newDisciplineEmenta}
+                onChange={(e) => setNewDisciplineEmenta(e.target.value)}
+                disabled={pdfFile !== null}
+                className="modal-input"
+              />
+
+              <TextField
+                label="Objetivos"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                value={newDisciplineObjetivos}
+                onChange={(e) => setNewDisciplineObjetivos(e.target.value)}
+                disabled={pdfFile !== null}
+                className="modal-input"
+              />
+
+              <Box className="educator-select">
+                <InputLabel>Professor</InputLabel>
+                <Select
+                  fullWidth
+                  value={selectedEducator}
+                  onChange={(e) => setSelectedEducator(e.target.value)}
+                  disabled={pdfFile !== null}
+                >
+                  {educators.map((educator, index) => (
+                    <MenuItem key={index} value={educator}>
+                      {educator}
+                    </MenuItem>
+                  ))}
+                </Select>
               </Box>
-            )}
+
+              {selectedEducator && (
+                <Box className="selected-educator">
+                  <Chip
+                    label={selectedEducator}
+                    onDelete={() => setSelectedEducator('')}
+                    deleteIcon={<CancelIcon />}
+                  />
+                </Box>
+              )}
+            </Box>
 
             <Box 
               className={`upload-area ${uploadHover ? 'drag-over' : ''} ${pdfFile ? 'has-file' : ''}`}
@@ -290,6 +415,18 @@ const DisciplineSessions = () => {
                   <Typography>
                     {pdfFile ? pdfFile.name : 'Arraste ou clique para fazer upload da ementa em PDF'}
                   </Typography>
+                  {pdfFile && (
+                    <IconButton 
+                      size="small" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPdfFile(null);
+                      }}
+                      className="remove-file"
+                    >
+                      <CancelIcon />
+                    </IconButton>
+                  )}
                 </Box>
               </label>
             </Box>
@@ -305,7 +442,7 @@ const DisciplineSessions = () => {
             <Button
               onClick={createNewDiscipline}
               variant="contained"
-              disabled={loading || (!newDisciplineName && !pdfFile)}
+              disabled={loading || (!pdfFile && !newDisciplineName) || !studyShift || !classStartTime || !classEndTime}
             >
               {loading ? <CircularProgress size={24} /> : 'Criar'}
             </Button>

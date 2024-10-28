@@ -1,4 +1,3 @@
-/* DisciplineSessions.css */
 /* src/styles/DisciplineSessions.css */
 :root {
   --primary-color: #5865F2;
@@ -58,6 +57,8 @@
   background-color: var(--primary-hover) !important;
 }
 
+/* src/styles/DisciplineSessions.css (continuação) */
+
 /* Grid de Disciplinas */
 .discipline-list {
   display: grid;
@@ -72,8 +73,10 @@
   border: 1px solid var(--border-color);
   border-radius: 8px !important;
   transition: all 0.2s ease;
-  height: 100%;
+  height: auto !important; /* Alterado de 100% para auto */
+  min-height: 200px; /* Adicionado altura mínima */
   cursor: pointer;
+  overflow: visible; /* Garante que o conteúdo seja visível */
 }
 
 .discipline-card:hover {
@@ -88,6 +91,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px !important;
+  overflow: visible; /* Alterado de hidden para visible */
 }
 
 .card-header {
@@ -114,6 +118,8 @@
   line-height: 1.5 !important;
   flex: 1;
   margin-bottom: 16px !important;
+  word-wrap: break-word; /* Adicionado para quebrar palavras longas */
+  overflow: visible; /* Garante que o conteúdo seja visível */
 }
 
 .card-footer {
@@ -131,16 +137,80 @@
   color: var(--text-secondary);
 }
 
-/* Modal */
+/* Modal Styles */
 .discipline-modal .MuiDialog-paper {
   background-color: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
+  max-width: 600px !important;
 }
 
 .discipline-modal .MuiDialogTitle-root {
   background-color: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-color);
   padding: 20px 24px;
+}
+
+.discipline-modal .MuiDialogContent-root {
+  padding: 24px !important;
+}
+
+/* Required Fields Section */
+.required-fields {
+  margin-bottom: 24px;
+}
+
+.shift-select {
+  margin-bottom: 24px;
+}
+
+.shift-select .MuiInputLabel-root,
+.time-label {
+  color: var(--text-secondary) !important;
+  margin-bottom: 8px !important;
+}
+
+.shift-select .MuiInputLabel-root::after,
+.time-label::after {
+  content: ' *';
+  color: var(--error-color);
+}
+
+.time-inputs {
+  display: flex;
+  gap: 16px;
+}
+
+.time-input {
+  flex: 1;
+}
+
+.time-input .MuiInputBase-root {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.time-input input {
+  color: var(--text-primary);
+}
+
+/* Modal Divider */
+.modal-divider {
+  margin: 24px 0 !important;
+  background-color: var(--border-color) !important;
+}
+
+/* Conditional Fields */
+.conditional-fields {
+  margin-top: 24px;
+}
+
+.conditional-fields.disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.modal-input {
+  margin-bottom: 16px !important;
 }
 
 .modal-input .MuiInputLabel-root {
@@ -153,20 +223,6 @@
 
 .modal-input .MuiOutlinedInput-input {
   color: var(--text-primary);
-}
-
-.educator-select {
-  margin-top: 20px;
-}
-
-.selected-educator {
-  margin-top: 12px;
-}
-
-.selected-educator .MuiChip-root {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
 }
 
 /* Upload Area */
@@ -185,18 +241,69 @@
   background-color: rgba(88, 101, 242, 0.1);
 }
 
-/* Chip Styles */
-.MuiChip-root {
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  font-size: 32px !important;
+  color: var(--text-secondary);
+}
+
+.has-file .upload-content {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.remove-file {
+  color: var(--error-color) !important;
+}
+
+/* Educator Selection */
+.educator-select {
+  margin-top: 24px;
+}
+
+.selected-educator {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.shift-chip {
   background-color: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--primary-color) !important;
 }
 
-.MuiChip-deleteIcon {
-  color: var(--text-secondary) !important;
+/* Dialog Actions */
+.MuiDialogActions-root {
+  padding: 16px 24px !important;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
 }
 
-/* Responsive Adjustments */
+.MuiDialogActions-root .MuiButton-root {
+  text-transform: none !important;
+  padding: 6px 16px !important;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-container .MuiCircularProgress-root {
+  color: var(--primary-color);
+}
+
+/* Responsive Design */
 @media (max-width: 1200px) {
   .discipline-list {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -215,7 +322,68 @@
     gap: 16px;
   }
 
-  .card {
-    min-height: 150px;
+  .time-inputs {
+    flex-direction: column;
+    gap: 16px;
   }
+
+  .discipline-modal .MuiDialog-paper {
+    margin: 16px;
+    max-height: calc(100% - 32px);
+  }
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.discipline-card {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Scrollbar Customization */
+.discipline-sessions-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.discipline-sessions-content::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.discipline-sessions-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.discipline-sessions-content::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+.time-input .MuiFormHelperText-root {
+  color: var(--text-secondary) !important;
+  margin-top: 4px !important;
+  font-size: 0.75rem !important;
+}
+
+.class-time {
+  margin-bottom: 24px;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap; /* Permite quebra em telas menores */
+}
+
+.time-input {
+  flex: 1;
+  min-width: 150px; /* Garante um tamanho mínimo */
 }

@@ -1,78 +1,272 @@
 /* src/styles/ProfilePage.css */
+:root {
+  --primary-color: #5865F2;
+  --primary-hover: #4752C4;
+  --bg-primary: #36393f;
+  --bg-secondary: #2f3136;
+  --bg-tertiary: #202225;
+  --text-primary: #ffffff;
+  --text-secondary: #b9bbbe;
+  --border-color: #40444b;
+  --success-color: #43b581;
+  --error-color: #f04747;
+  --card-bg: #2f3136;
+  --card-hover: #36393f;
+  --sidebar-width: 240px;
+}
 
+/* Layout Base */
 .profile-page-container {
-    display: flex;
-    height: 100%;
-    background-color: #f0f0f0; /* Fundo mais claro */
-  }
-  
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.profile-content {
+  flex: 1;
+  padding: 32px;
+  margin-left: var(--sidebar-width);
+  overflow-y: auto;
+}
+
+/* Loading e Error */
+.profile-loading,
+.profile-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--bg-primary);
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.profile-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.edit-button,
+.save-button {
+  background-color: var(--primary-color) !important;
+  color: var(--text-primary) !important;
+  text-transform: none !important;
+  padding: 8px 20px !important;
+}
+
+.edit-button:hover,
+.save-button:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+.cancel-button {
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  text-transform: none !important;
+}
+
+/* Cards */
+.profile-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 24px !important;
+  height: 100%;
+  transition: all 0.2s ease;
+}
+
+.profile-card:hover {
+  background-color: var(--card-hover) !important;
+}
+
+/* Avatar e Informações Pessoais */
+.profile-avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+}
+
+.profile-avatar {
+  width: 120px !important;
+  height: 120px !important;
+  font-size: 3rem !important;
+  background-color: var(--primary-color) !important;
+}
+
+.profile-name,
+.profile-email {
+  color: var(--text-primary) !important;
+  text-align: center;
+}
+
+.profile-email {
+  color: var(--text-secondary) !important;
+}
+
+/* Stats */
+.profile-stats {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary) !important;
+}
+
+.stat-item .MuiSvgIcon-root {
+  color: var(--primary-color) !important;
+}
+
+/* Learning Styles Section */
+.card-header {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.section-description {
+  color: var(--text-secondary) !important;
+}
+
+.learning-styles-grid {
+  padding: 24px 0;
+}
+
+/* Select Fields */
+.learning-style-select {
+  width: 100%;
+}
+
+.learning-style-select .MuiInputLabel-root {
+  color: var(--text-primary) !important;
+}
+
+.learning-style-select .MuiOutlinedInput-root {
+  background-color: var(--bg-tertiary);
+}
+
+.learning-style-select .MuiOutlinedInput-input {
+  color: var(--text-primary) !important;
+}
+
+.learning-style-select .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color) !important;
+}
+
+.learning-style-select .Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-color) !important;
+}
+
+/* Menu Items */
+.MuiMenu-paper {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  color: var(--text-primary) !important;
+}
+
+.MuiMenuItem-root {
+  color: var(--text-primary) !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Info Paper */
+.info-paper {
+  margin-top: 24px;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color);
+}
+
+.info-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.info-icon {
+  color: var(--primary-color) !important;
+  font-size: 2.5rem !important;
+}
+
+.test-button {
+  background-color: var(--primary-color) !important;
+  color: var(--text-primary) !important;
+  text-transform: none !important;
+  margin-left: auto !important;
+}
+
+.test-button:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+/* Success Alert */
+.success-alert {
+  background-color: var(--success-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Divider */
+.MuiDivider-root {
+  background-color: var(--border-color) !important;
+  margin: 24px 0 !important;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
   .profile-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: #ffffff; /* Fundo branco para o conteúdo */
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave para destaque */
-    margin: 40px;
-    margin-left: 250px;
+    margin-left: 0;
+    padding: 24px;
   }
-  
+
+  .info-paper {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-content {
+    padding: 16px;
+  }
+
   .profile-header {
-    font-size: 28px;
-    margin-bottom: 30px;
-    text-align: center;
-    color: #333; /* Título mais escuro */
-  }
-  
-  .profile-input {
-    margin-bottom: 20px;
-  }
-  
-  .profile-input input, .profile-input .MuiSelect-select {
-    background-color: #fff; /* Fundo branco para os inputs */
-    color: #333; /* Texto mais escuro */
-  }
-  
-  .profile-input label {
-    color: #555; /* Cor suave para os labels */
-  }
-  
-  .profile-save-button {
-    margin-top: 20px;
-    background-color: #1976d2; /* Cor azul do botão */
-    color: white;
-    font-weight: bold;
-  }
-  
-  .profile-save-button:hover {
-    background-color: #145a86; /* Cor mais escura no hover */
-  }
-  
-  .profile-success-message {
-    margin-top: 10px;
-    color: green;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
     text-align: center;
   }
-  
-  .profile-error-message {
-    margin-top: 10px;
-    color: red;
-    text-align: center;
-  }
-  
-  .profile-info-message {
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-    color: #333;
-  }
-  
-  a {
-    color: #1976d2;
-    text-decoration: none;
-  }
-  
-  a:hover {
-    text-decoration: underline;
-  }
-  
+}

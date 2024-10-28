@@ -1,0 +1,213 @@
+/* src/styles/Dashboard.css */
+:root {
+    --primary-color: #5865F2;
+    --primary-hover: #4752C4;
+    --bg-primary: #36393f;
+    --bg-secondary: #2f3136;
+    --bg-tertiary: #202225;
+    --text-primary: #ffffff;
+    --text-secondary: #b9bbbe;
+    --border-color: #40444b;
+    --success-color: #43b581;
+    --error-color: #f04747;
+    --warning-color: #faa61a;
+    --card-bg: #2f3136;
+    --card-hover: #36393f;
+    --sidebar-width: 240px;
+  }
+  
+  .dashboard-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-primary);
+  }
+  
+  .dashboard-content {
+    flex: 1;
+    padding: 32px;
+    margin-left: var(--sidebar-width);
+    overflow-y: auto;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  
+  .dashboard-title {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  .report-button {
+    background-color: var(--primary-color) !important;
+    text-transform: none !important;
+    padding: 8px 16px !important;
+  }
+  
+  .report-button:hover {
+    background-color: var(--primary-hover) !important;
+  }
+  
+  /* Cards de Estatísticas */
+  .stat-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px);
+    background-color: var(--card-hover) !important;
+    border-color: var(--primary-color);
+  }
+  
+  .stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-title {
+    color: var(--text-secondary) !important;
+    font-size: 0.875rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .stat-value {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .stat-change {
+    color: var(--success-color) !important;
+  }
+  
+  /* Cartões de Gráficos */
+  .chart-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color);
+    height: 100%;
+  }
+  
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .chart-container {
+    margin-top: 16px;
+  }
+  
+  .chart-header h6 {
+    color: var(--text-primary);
+  }
+  
+  /* Gráfico de Pizza */
+  .pie-chart-container {
+    margin: 16px 0;
+  }
+  
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+  }
+  
+  /* Atividades Recentes */
+  .activities-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color);
+  }
+  
+  .activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .activity-item:hover {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .activity-content {
+    flex: 1;
+  }
+  
+  .activity-content p {
+    color: var(--text-primary);
+  }
+  
+  .activity-content .MuiTypography-body2 {
+    color: var(--text-secondary);
+  }
+  
+  /* Menu do Gráfico */
+  .chart-menu {
+    background-color: var(--bg-secondary) !important;
+  }
+  
+  .chart-menu .MuiMenuItem-root {
+    color: var(--text-primary) !important;
+  }
+  
+  .chart-menu .MuiMenuItem-root:hover {
+    background-color: var(--bg-tertiary) !important;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 1200px) {
+    .dashboard-content {
+      padding: 24px;
+    }
+  }
+  
+  @media (max-width: 960px) {
+    .dashboard-content {
+      margin-left: 0;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .dashboard-content {
+      padding: 16px;
+    }
+  
+    .dashboard-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+  }

@@ -257,18 +257,31 @@ export const deleteStudySession = async (sessionId) => {
   }
 };
 
-export const uploadDisciplinePDF = async (file) => {
-  const token = localStorage.getItem('accessToken');  // Obtém o token de autenticação
+// Upload discipline from PDF with additional data
+export const uploadDisciplinePDF = async ({
+  file,
+  studyShift,
+  classStartTime,
+  classEndTime
+}) => {
+  const token = getAuthToken();
   const formData = new FormData();
-  formData.append('file', file);  // Adiciona o arquivo ao FormData
+  formData.append('file', file);
+  formData.append('turno_estudo', studyShift);
+  formData.append('horario_inicio', classStartTime);
+  formData.append('horario_fim', classEndTime);
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/create_discipline_from_pdf`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',  // Cabeçalho para enviar arquivos
-      },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/create_discipline_from_pdf`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('Erro ao enviar PDF:', error);
@@ -368,6 +381,29 @@ export const deleteCalendarEvent = async (eventId) => {
   }
 };
 
+export const getDiscipline = async (disciplineId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${API_BASE_URL}/disciplines/${disciplineId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    // Formata os dados da resposta para incluir os novos campos
+    const discipline = {
+      ...response.data.discipline,
+      studyShift: response.data.discipline.turno_estudo || 'manha',
+      classStartTime: response.data.discipline.horario_inicio || '08:00',
+      classEndTime: response.data.discipline.horario_fim || '10:00'
+    };
+
+    return discipline;
+  } catch (error) {
+    handleAuthError(error);
+  }
+};
+
 // GET all disciplines
 export const getDisciplines = async () => {
   const token = getAuthToken();
@@ -377,19 +413,44 @@ export const getDisciplines = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data.disciplines;
+    
+    // Mapeia os dados da resposta para incluir os novos campos
+    const disciplines = response.data.disciplines.map(discipline => ({
+      ...discipline,
+      // Garante que os campos existam mesmo se não estiverem na resposta
+      studyShift: discipline.turno_estudo || 'manha',
+      classStartTime: discipline.horario_inicio || '08:00',
+      classEndTime: discipline.horario_fim || '10:00'
+    }));
+
+    return disciplines;
   } catch (error) {
     handleAuthError(error);
   }
 };
-
 // POST - Create a new discipline
-export const createDiscipline = async ({ nomeCurso, ementa, objetivos, educator }) => {
+export const createDiscipline = async ({ 
+  nomeCurso, 
+  ementa, 
+  objetivos, 
+  professorId, 
+  studyShift,
+  classStartTime,
+  classEndTime 
+}) => {
   const token = getAuthToken();
   try {
     const response = await axios.post(
       `${API_BASE_URL}/disciplines`,
-      { nome_curso: nomeCurso, ementa, objetivos, educator },
+      {
+        nome_curso: nomeCurso,
+        ementa,
+        objetivos,
+        professor_id: professorId,
+        turno_estudo: studyShift,
+        horario_inicio: classStartTime,
+        horario_fim: classEndTime
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -403,12 +464,28 @@ export const createDiscipline = async ({ nomeCurso, ementa, objetivos, educator 
 };
 
 // PUT - Update an existing discipline
-export const updateDiscipline = async (disciplineId, { nomeCurso, ementa, objetivos }) => {
+export const updateDiscipline = async (disciplineId, {
+  nomeCurso,
+  ementa,
+  objetivos,
+  professorId,
+  studyShift,
+  classStartTime,
+  classEndTime
+}) => {
   const token = getAuthToken();
   try {
     const response = await axios.put(
       `${API_BASE_URL}/disciplines/${disciplineId}`,
-      { nome_curso: nomeCurso, ementa, objetivos },
+      {
+        nome_curso: nomeCurso,
+        ementa,
+        objetivos,
+        professor_id: professorId,
+        turno_estudo: studyShift,
+        horario_inicio: classStartTime,
+        horario_fim: classEndTime
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -420,6 +497,7 @@ export const updateDiscipline = async (disciplineId, { nomeCurso, ementa, objeti
     handleAuthError(error);
   }
 };
+
 
 // DELETE - Delete a discipline
 export const deleteDiscipline = async (disciplineId) => {
@@ -518,16 +596,19 @@ export const getStudyPlan = async (sessionId) => {
   }
 };
 
-export const createAutomaticStudyPlan = async (disciplineId, tema, duracao = "60 minutos") => {
-  const token = getAuthToken();
+// Função para criar um plano de estudo automático
+export const createAutomaticStudyPlan = async (disciplineId, { session_id, descricao, duracao, periodo }) => {
+  const token = getAuthToken(); // Obtém o token do localStorage
   try {
     const response = await axios.post(
       `${API_BASE_URL}/study_plan/auto`,
       {
         disciplina: disciplineId,
-        tema: tema,
+        session_id: session_id,
+        tema: descricao,
         duracao_desejada: duracao,
-        objetivos: []
+        periodo: periodo, // Inclui o período de estudo (manhã, tarde ou noite)
+        objetivos: [],
       },
       {
         headers: {
@@ -536,15 +617,15 @@ export const createAutomaticStudyPlan = async (disciplineId, tema, duracao = "60
         },
       }
     );
-    
-    return response.data;
-    
+
+    return response.data; // Retorna os dados da resposta
   } catch (error) {
     console.error('Erro ao gerar plano automático:', error);
-    handleAuthError(error);
-    throw error;
+    handleAuthError(error); // Lida com erros de autenticação
+    throw error; // Repassa o erro para ser tratado onde for necessário
   }
 };
+
 
 export const getSessionsWithoutPlan = async () => {
   const token = getAuthToken();
