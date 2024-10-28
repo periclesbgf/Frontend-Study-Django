@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
-import { loginUser, recoverPassword } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
-import '../styles/Login.css';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  InputAdornment,
+  Divider,
+} from '@mui/material';
+import {
+  Person,
+  Lock,
+  School,
+  Email,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
+import { loginUser, recoverPassword } from '../services/api';
+import '../styles/Auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,14 +33,17 @@ const Login = () => {
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveryMessage, setRecoveryMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
       const data = await loginUser(email, password);
-      localStorage.setItem('accessToken', data.access_token);  // Armazena o token
-      navigate('/home-student');  // Redireciona para a página HomeStudent
+      localStorage.setItem('accessToken', data.access_token);
+      navigate('/home-student');
     } catch (err) {
       setError(err.detail || "Falha ao fazer login");
     }
@@ -25,65 +51,165 @@ const Login = () => {
 
   const handlePasswordRecovery = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
       await recoverPassword(recoveryEmail);
       setRecoveryMessage("Link de redefinição de senha enviado para o seu e-mail!");
+      setTimeout(() => {
+        setShowRecovery(false);
+        setRecoveryMessage('');
+      }, 3000);
     } catch (err) {
       setError("Falha ao enviar o e-mail de recuperação");
     }
   };
 
   return (
-    <div className="login-container">
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="E-mail"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Senha"
-          required
-        />
-        <button type="submit">Entrar</button>
-      </form>
-      {error && <p className="error">{error}</p>}
+    <Box className="login-page">
+      <Paper elevation={3} className="login-container">
+        <Box className="login-header">
+          <School className="login-icon" />
+          <Typography variant="h4" className="login-title">
+            Login
+          </Typography>
+        </Box>
 
-      <p>
-        <button onClick={() => setShowRecovery(true)}>Esqueceu sua senha?</button>
-      </p>
+        {error && (
+          <Alert severity="error" className="error-alert">
+            {error}
+          </Alert>
+        )}
 
-      {showRecovery && (
-        <div className="recovery-modal">
-          <h2>Recuperar Senha</h2>
-          <form onSubmit={handlePasswordRecovery}>
-            <input
+        <form onSubmit={handleLogin} className="login-form">
+          <TextField
+            fullWidth
+            label="E-mail"
+            variant="outlined"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="login-input"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email className="input-icon" />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="Senha"
+            variant="outlined"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="login-input"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock className="input-icon" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            className="login-button"
+          >
+            Entrar
+          </Button>
+        </form>
+
+        <Button
+          variant="text"
+          onClick={() => setShowRecovery(true)}
+          className="forgot-password-button"
+        >
+          Esqueceu sua senha?
+        </Button>
+
+        <Divider className="divider">
+          <Typography variant="body2">ou</Typography>
+        </Divider>
+
+        <Box className="register-options">
+          <Typography variant="body1" className="register-text">
+            Não tem uma conta?
+          </Typography>
+          <Box className="register-buttons">
+            <Button
+              component={Link}
+              to="/register-student"
+              variant="outlined"
+              className="register-button student"
+              startIcon={<School />}
+            >
+              Registrar como Estudante
+            </Button>
+            <Button
+              component={Link}
+              to="/register-teacher"
+              variant="outlined"
+              className="register-button teacher"
+              startIcon={<Person />}
+            >
+              Registrar como Professor
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+
+      <Dialog
+        open={showRecovery}
+        onClose={() => setShowRecovery(false)}
+        className="recovery-dialog"
+      >
+        <DialogTitle>Recuperar Senha</DialogTitle>
+        <DialogContent>
+          {recoveryMessage ? (
+            <Alert severity="success">{recoveryMessage}</Alert>
+          ) : (
+            <TextField
+              autoFocus
+              margin="dense"
+              label="E-mail"
               type="email"
+              fullWidth
               value={recoveryEmail}
               onChange={(e) => setRecoveryEmail(e.target.value)}
-              placeholder="Digite seu e-mail"
+              className="recovery-input"
               required
             />
-            <button type="submit">Enviar E-mail de Recuperação</button>
-          </form>
-          {recoveryMessage && <p className="success">{recoveryMessage}</p>}
-        </div>
-      )}
-
-      <p className="register-prompt">
-        Não tem uma conta?
-        <br />
-        <Link className="register-link" to="/register-student">Registrar como Estudante</Link>
-        <span> ou </span>
-        <Link className="register-link" to="/register-teacher">Registrar como Professor</Link>
-      </p>
-    </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowRecovery(false)} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handlePasswordRecovery} color="primary">
+            Enviar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

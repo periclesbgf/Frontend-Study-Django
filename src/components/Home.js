@@ -1,29 +1,163 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Container, 
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+} from '@mui/material';
+import {
+  School,
+  Person,
+  Login,
+  Security,
+  Psychology,
+  Timeline,
+  Group,
+  AutoStories,
+} from '@mui/icons-material';
 import '../styles/Home.css';
 
 const Home = () => {
+  const features = [
+    {
+      icon: <Psychology />,
+      title: 'Aprendizado Personalizado',
+      description: 'Sessões de estudo adaptadas ao seu estilo de aprendizagem único.'
+    },
+    {
+      icon: <Timeline />,
+      title: 'Acompanhamento de Progresso',
+      description: 'Monitore seu desenvolvimento acadêmico em tempo real.'
+    },
+    {
+      icon: <Group />,
+      title: 'Colaboração em Tempo Real',
+      description: 'Interaja com professores e colegas de forma dinâmica.'
+    },
+    {
+      icon: <AutoStories />,
+      title: 'Conteúdo Inteligente',
+      description: 'Material de estudo gerado por IA para maximizar seu aprendizado.'
+    }
+  ];
+
   return (
-    <div className="home">
-      <h1>Bem-vindo ao Eden AI</h1>
+    <Box className="home-container">
+      {/* Hero Section */}
+      <Box className="hero-section">
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography variant="h1" className="hero-title">
+                Bem-vindo ao Eden AI
+              </Typography>
+              <Typography variant="h5" className="hero-subtitle">
+                Transformando a educação através da inteligência artificial
+              </Typography>
+              <Box className="hero-buttons">
+                <Button
+                  component={Link}
+                  to="/register-student"
+                  variant="contained"
+                  className="hero-button student"
+                  startIcon={<School />}
+                >
+                  Sou Estudante
+                </Button>
+                <Button
+                  component={Link}
+                  to="/register-teacher"
+                  variant="contained"
+                  className="hero-button teacher"
+                  startIcon={<Person />}
+                >
+                  Sou Professor
+                </Button>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6} className="hero-image-container">
+              <img 
+                src="/hero-image.png" 
+                alt="Eden AI Learning" 
+                className="hero-image"
+              />
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
-      <p className="app-description">
-        Eden AI é uma plataforma desenvolvida para aprimorar a experiência educacional, conectando alunos e professores de maneira personalizada. 
-        Com o Eden AI, os alunos podem acessar sessões de estudo personalizadas, acompanhar seu progresso acadêmico e colaborar com educadores em tempo real.
-        Nosso objetivo é proporcionar uma experiência de aprendizado integrada, utilizando tecnologia generativa para atender às necessidades individuais de cada aluno.
-      </p>
+      {/* Features Section */}
+      <Box className="features-section">
+        <Container maxWidth="lg">
+          <Typography variant="h2" className="section-title">
+            Por que escolher o Eden AI?
+          </Typography>
+          <Grid container spacing={4}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card className="feature-card">
+                  <CardContent>
+                    <Box className="feature-icon">
+                      {feature.icon}
+                    </Box>
+                    <Typography variant="h6" className="feature-title">
+                      {feature.title}
+                    </Typography>
+                    <Typography variant="body2" className="feature-description">
+                      {feature.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
-      <p className="password-security">
-        A sua senha é protegida utilizando criptografia de hash. Isso significa que, mesmo que alguém tenha acesso ao banco de dados, 
-        não conseguirá visualizar ou recuperar a senha que você digitou.
-      </p>
+      {/* Security Section */}
+      <Box className="security-section">
+        <Container maxWidth="md">
+          <Paper elevation={3} className="security-paper">
+            <Security className="security-icon" />
+            <Typography variant="h6" className="security-title">
+              Sua segurança é nossa prioridade
+            </Typography>
+            <Typography variant="body1" className="security-text">
+              Utilizamos criptografia avançada para proteger seus dados e informações pessoais.
+              Todas as senhas são armazenadas com hash seguro, garantindo a privacidade dos nossos usuários.
+            </Typography>
+          </Paper>
+        </Container>
+      </Box>
 
-      <div className="links-container">
-        <Link className="custom-link" to="/register-student">Registrar como Estudante</Link>
-        <Link className="custom-link" to="/register-teacher">Registrar como Professor</Link>
-        <Link className="custom-link" to="/login">Login</Link>
-      </div>
-    </div>
+      {/* CTA Section */}
+      <Box className="cta-section">
+        <Container maxWidth="md">
+          <Typography variant="h3" className="cta-title">
+            Comece sua jornada agora
+          </Typography>
+          <Typography variant="h6" className="cta-subtitle">
+            Entre para uma comunidade de aprendizado inovadora
+          </Typography>
+          <Button
+            component={Link}
+            to="/login"
+            variant="contained"
+            size="large"
+            className="cta-button"
+            startIcon={<Login />}
+          >
+            Acessar Plataforma
+          </Button>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

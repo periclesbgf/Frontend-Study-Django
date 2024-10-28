@@ -1,8 +1,7 @@
-// src/components/CalendarComponent.js
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import 'moment/locale/pt-br'; // Importa localização em português
+import 'moment/locale/pt-br';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { 
   Modal, 
@@ -26,8 +25,39 @@ import {
 import { getCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../services/api';
 import '../styles/CalendarComponent.css';
 
-moment.locale('pt-br'); // Configura momento para português
+moment.locale('pt-br');
 const localizer = momentLocalizer(moment);
+
+const CustomToolbar = (toolbar) => {
+  const goToBack = () => {
+    toolbar.onNavigate('PREV');
+  };
+
+  const goToNext = () => {
+    toolbar.onNavigate('NEXT');
+  };
+
+  const goToCurrent = () => {
+    toolbar.onNavigate('TODAY');
+  };
+
+  return (
+    <div className="rbc-toolbar">
+      <span className="rbc-btn-group">
+        <button type="button" onClick={goToBack}>Anterior</button>
+        <button type="button" onClick={goToCurrent}>Hoje</button>
+        <button type="button" onClick={goToNext}>Próximo</button>
+      </span>
+      <span className="rbc-toolbar-label">{toolbar.label}</span>
+      <span className="rbc-btn-group">
+        <button type="button" onClick={() => toolbar.onView('month')}>Mês</button>
+        <button type="button" onClick={() => toolbar.onView('week')}>Semana</button>
+        <button type="button" onClick={() => toolbar.onView('day')}>Dia</button>
+        <button type="button" onClick={() => toolbar.onView('agenda')}>Agenda</button>
+      </span>
+    </div>
+  );
+};
 
 const CalendarComponent = () => {
   const [events, setEvents] = useState([]);
@@ -48,7 +78,6 @@ const CalendarComponent = () => {
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Função para mostrar notificações
   const showNotification = (message, severity = 'success') => {
     setSnackbar({
       open: true,
@@ -61,7 +90,6 @@ const CalendarComponent = () => {
     setLoading(true);
     try {
       const calendarEvents = await getCalendarEvents();
-      // Converte as datas para objetos Date
       const formattedEvents = calendarEvents.map(event => ({
         ...event,
         start: new Date(event.start),
@@ -236,7 +264,8 @@ const CalendarComponent = () => {
             }}
             eventPropGetter={eventStyleGetter}
             components={{
-              event: CustomEventComponent
+              event: CustomEventComponent,
+              toolbar: CustomToolbar
             }}
             messages={{
               today: 'Hoje',
@@ -247,6 +276,7 @@ const CalendarComponent = () => {
               day: 'Dia',
               agenda: 'Agenda',
               noEventsInRange: 'Não há eventos neste período',
+              showMore: (total) => `+${total} mais`
             }}
           />
         )}
