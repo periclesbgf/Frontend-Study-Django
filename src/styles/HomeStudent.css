@@ -1,55 +1,74 @@
-/* Definindo a estrutura geral da página */
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #444; /* Cor do fundo do cabeçalho */
-  color: white;
-  width: 100%;
-  box-sizing: border-box;
+/* HomeStudent.css */
+:root {
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 60px;
+  --bg-primary: #333;
+  --text-primary: #ffffff;
 }
 
-.header h2 {
-  margin: 0;
-}
 .home-student {
   display: flex;
   min-height: 100vh;
-  background-color: #333;
-  padding-left: 200px; /* Largura da Sidebar */
-  width: 100%;
+  background-color: var(--bg-primary);
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s ease;
+  position: relative;
+  width: calc(100% - var(--sidebar-width));
 }
 
 .home-student.sidebar-collapsed {
-  padding-left: 80px; /* Ajustar quando a sidebar estiver colapsada */
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
 }
 
-/* Cabeçalho (header) para o título e o ícone do usuário */
-
-
-/* Garantir que o conteúdo ocupe o restante da página corretamente */
 .content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #333;
-  color: white;
+  flex: 1;
   padding: 20px;
-  box-sizing: border-box;
   width: 100%;
-}
-
-/* Ajuste adicional para garantir que o chat ocupe o espaço disponível */
-.chat-wrapper {
-  flex-grow: 1;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-/* Estilo para o ícone de usuário no cabeçalho */
-.user-icon {
-  margin-left: auto; /* Garante que o ícone fique alinhado à direita */
+.content h2 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+/* Ajustes específicos para o calendário dentro do content */
+.content .calendar-wrapper {
+  padding: 0 !important;
+  width: 100%;
+  flex: 1;
+}
+
+.content .calendar-container {
+  margin: 0;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+  .home-student {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 0;
+  }
+
+  .home-student.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .content .calendar-wrapper {
+    padding-left: 60px !important; /* Espaço para o botão do menu mobile */
+  }
 }

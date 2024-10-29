@@ -64,6 +64,7 @@ const StudySessions = () => {
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [editPlan, setEditPlan] = useState('');
+  const [originalOrder, setOriginalOrder] = useState([]);
 
   // Estados para geração automática de plano
   const [openAutoplanModal, setOpenAutoplanModal] = useState(false);
@@ -85,7 +86,28 @@ const StudySessions = () => {
     setLoading(true);
     try {
       const response = await getStudySessionFromDiscipline(disciplineId);
-      setSessions(response.study_sessions || []);
+      const sessions = response.study_sessions || [];
+      
+      // Se não temos uma ordem original salva ainda, salvamos a ordem atual
+      if (originalOrder.length === 0) {
+        const orderMap = sessions.map(session => session.IdSessao);
+        setOriginalOrder(orderMap);
+        setSessions(sessions);
+      } else {
+        // Ordenamos as sessões baseado na ordem original
+        const orderedSessions = [...sessions].sort((a, b) => {
+          const indexA = originalOrder.indexOf(a.IdSessao);
+          const indexB = originalOrder.indexOf(b.IdSessao);
+          
+          // Se uma sessão não estiver na ordem original, ela vai para o fim
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          
+          return indexA - indexB;
+        });
+        
+        setSessions(orderedSessions);
+      }
       setError(null);
     } catch (error) {
       console.error('Erro ao carregar sessões de estudo:', error);
@@ -93,7 +115,7 @@ const StudySessions = () => {
     } finally {
       setLoading(false);
     }
-  }, [disciplineId]);
+  }, [disciplineId, originalOrder]);
 
   // Carrega sessões sem plano
   const loadSessionsWithoutPlan = async () => {
