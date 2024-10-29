@@ -58,7 +58,7 @@ const Home = () => {
                 Bem-vindo ao Eden AI
               </Typography>
               <Typography variant="h5" className="hero-subtitle">
-                Transformando a educação através da inteligência artificial
+                Agente de Aprendizado Inteligente para Estudantes
               </Typography>
               <Box className="hero-buttons">
                 <Button

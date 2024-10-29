@@ -79,6 +79,14 @@ export const sendPrompt = async (sessionId, prompt, disciplineId, file = null) =
       }
     );
 
+    const responseData = response.data.response;
+    
+    // Se a resposta for um objeto com tipo 'image', retorna diretamente
+    if (responseData && typeof responseData === 'object' && responseData.type === 'image') {
+      return responseData;
+    }
+
+    // Caso contrário, mantém o formato anterior
     return response.data;
   } catch (error) {
     console.error('Error in sendPrompt:', error);
