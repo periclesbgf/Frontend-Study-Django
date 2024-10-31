@@ -730,133 +730,108 @@ export const getSessionsWithoutPlan = async () => {
   }
 };
 
-const WorkspaceService = {
-  uploadMaterial: async (file, accessLevel, disciplineId = null, sessionId = null) => {
-    const token = getAuthToken();
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('access_level', accessLevel);
-      
-      if (disciplineId) formData.append('discipline_id', disciplineId);
-      if (sessionId) formData.append('session_id', sessionId);
+export const uploadMaterial = async (file, accessLevel, disciplineId = null, sessionId = null) => {
+  const token = getAuthToken();
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('access_level', accessLevel);
+    if (disciplineId) formData.append('discipline_id', disciplineId);
+    if (sessionId) formData.append('session_id', sessionId);
 
-      const response = await axios.post(
-        `${API_BASE_URL}/workspace/upload`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || new Error('Erro ao fazer upload do material');
-    }
-  },
-
-  getMaterials: async (disciplineId = null, sessionId = null) => {
-    const token = getAuthToken();
-    try {
-      const params = {};
-      if (disciplineId) params.discipline_id = disciplineId;
-      if (sessionId) params.session_id = sessionId;
-
-      const response = await axios.get(
-        `${API_BASE_URL}/workspace/materials`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || new Error('Erro ao carregar materiais');
-    }
-  },
-
-  updateMaterialAccess: async (materialId, accessLevel, disciplineId = null, sessionId = null) => {
-    const token = getAuthToken();
-    try {
-      const data = {
-        access_level: accessLevel,
-        discipline_id: disciplineId,
-        session_id: sessionId
-      };
-
-      const response = await axios.put(
-        `${API_BASE_URL}/workspace/material/${materialId}/access`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || new Error('Erro ao atualizar acesso do material');
-    }
-  },
-
-  deleteMaterial: async (materialId) => {
-    const token = getAuthToken();
-    try {
-      const response = await axios.delete(
-        `${API_BASE_URL}/workspace/material/${materialId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || new Error('Erro ao remover material');
-    }
+    const response = await axios.post(
+      `${API_BASE_URL}/workspace/upload`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || new Error('Erro ao fazer upload do material');
   }
 };
 
-// Workspace Hook
-export const useWorkspace = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const getMaterials = async (disciplineId = null, sessionId = null) => {
+  const token = getAuthToken();
+  try {
+    const params = {};
+    if (disciplineId) params.discipline_id = disciplineId;
+    if (sessionId) params.session_id = sessionId;
 
-  const handleRequest = async (requestFn) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await requestFn();
-      return result;
-    } catch (err) {
-      const errorMessage = err.response?.data?.detail || err.message;
-      setError(errorMessage);
-      throw errorMessage;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    loading,
-    error,
-    uploadMaterial: (file, accessLevel, disciplineId, sessionId) => 
-      handleRequest(() => WorkspaceService.uploadMaterial(file, accessLevel, disciplineId, sessionId)),
-    getMaterials: (disciplineId, sessionId) => 
-      handleRequest(() => WorkspaceService.getMaterials(disciplineId, sessionId)),
-    updateMaterialAccess: (materialId, accessLevel, disciplineId, sessionId) => 
-      handleRequest(() => WorkspaceService.updateMaterialAccess(materialId, accessLevel, disciplineId, sessionId)),
-    deleteMaterial: (materialId) => 
-      handleRequest(() => WorkspaceService.deleteMaterial(materialId))
-  };
+    const response = await axios.get(
+      `${API_BASE_URL}/workspace/materials`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || new Error('Erro ao carregar materiais');
+  }
 };
 
-// Adicione o WorkspaceService às exportações existentes
-export {
-  // ... outras exportações existentes
-  WorkspaceService
+export const updateMaterialAccess = async (materialId, accessLevel, disciplineId = null, sessionId = null) => {
+  const token = getAuthToken();
+  try {
+    const data = {
+      access_level: accessLevel,
+      discipline_id: disciplineId,
+      session_id: sessionId
+    };
+
+    const response = await axios.put(
+      `${API_BASE_URL}/workspace/material/${materialId}/access`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || new Error('Erro ao atualizar acesso do material');
+  }
+};
+
+export const deleteMaterial = async (materialId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/workspace/material/${materialId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || new Error('Erro ao remover material');
+  }
+};
+
+export const getMaterialContent = async (materialId) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/workspace/material/${materialId}/content`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob'
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || new Error('Erro ao carregar conteúdo do material');
+  }
 };
