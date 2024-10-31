@@ -16,6 +16,7 @@ import {
   Chip,
   Paper,
   Collapse,
+  Tooltip,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -24,7 +25,14 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CloseIcon from '@mui/icons-material/Close';
-import { sendPrompt, getStudySessionById, getChatHistory, getStudyPlan } from '../services/api';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { 
+  sendPrompt, 
+  getStudySessionById, 
+  getChatHistory, 
+  getStudyPlan,
+  updateTopicProgress 
+} from '../services/api';
 import '../styles/ChatPage.css';
 
 import BotImage from '../assets/output_image.png';
@@ -43,6 +51,7 @@ const ChatPage = () => {
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [expandedSection, setExpandedSection] = useState('');
   const [isStudyPlanOpen, setIsStudyPlanOpen] = useState(false);
+  const [updatingProgress, setUpdatingProgress] = useState(false);
   
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -81,13 +90,13 @@ const ChatPage = () => {
     try {
       const response = await getStudyPlan(sessionId);
       
-      // Mapeia os dados do plano para o formato esperado
       const mappedPlan = {
         title: response.disciplina,
         description: response.descricao,
         objective: response.objetivo_sessao,
         totalDuration: response.duracao_total,
         topics: response.plano_execucao.map(topic => ({
+          id: topic.id || `topic-${Math.random()}`,
           title: topic.titulo,
           duration: topic.duracao,
           description: topic.descricao,
@@ -114,6 +123,36 @@ const ChatPage = () => {
     loadStudyPlan();
   }, [loadSessionDetails, loadStudyPlan]);
 
+  const handleTopicProgress = async (topicId, newProgress) => {
+    if (updatingProgress) return;
+    
+    setUpdatingProgress(true);
+    try {
+      await updateTopicProgress(sessionId, topicId, newProgress);
+      
+      setStudyPlan(prevPlan => ({
+        ...prevPlan,
+        topics: prevPlan.topics.map(topic => 
+          topic.id === topicId
+            ? {
+                ...topic,
+                progress: newProgress,
+                subtopics: topic.subtopics.map((subtopic, index) => ({
+                  ...subtopic,
+                  completed: newProgress > (index + 1) * (100 / topic.subtopics.length)
+                }))
+              }
+            : topic
+        )
+      }));
+      
+    } catch (error) {
+      console.error('Erro ao atualizar progresso:', error);
+    } finally {
+      setUpdatingProgress(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if ((!input.trim() && !file) || loading) return;
 
@@ -124,21 +163,37 @@ const ChatPage = () => {
       setLoading(true);
       const response = await sendPrompt(sessionId, input, disciplineId, file);
       
-      // Verifica se a resposta é uma imagem
-      if (response && response.type === 'image') {
-        const botMessage = {
-          role: 'assistant',
-          content: JSON.stringify(response)  // Mantém todo o objeto da imagem
-        };
-        setMessages(prev => [...prev, botMessage]);
+      let botMessage;
+      
+      if (response && typeof response === 'object') {
+        if (response.type === 'multimodal') {
+          botMessage = {
+            role: 'assistant',
+            type: 'multimodal',
+            content: response.content,
+            image: response.image
+          };
+        } else if (response.type === 'image') {
+          botMessage = {
+            role: 'assistant',
+            type: 'image',
+            content: response.content,
+            image: response.image
+          };
+        } else {
+          botMessage = {
+            role: 'assistant',
+            content: response.content || response.response
+          };
+        }
       } else {
-        const botMessage = {
+        botMessage = {
           role: 'assistant',
-          content: response.response
+          content: response
         };
-        setMessages(prev => [...prev, botMessage]);
       }
 
+      setMessages(prev => [...prev, botMessage]);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = null;
     } catch (err) {
@@ -202,26 +257,21 @@ const ChatPage = () => {
     }
   };
 
-  const renderMessageContent = (content) => {
-    try {
-      // Tenta fazer parse do conteúdo como JSON
-      const parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
-      
-      // Verifica se é uma mensagem com imagem
-      if (parsedContent.type === 'image') {
-        return (
-          <Box className="message-with-image">
-            <img 
-              src={parsedContent.image} 
-              alt="Imagem da resposta"
-              className="response-image"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '400px',
-                borderRadius: '8px',
-                marginBottom: '8px'
-              }}
-            />
+  const renderMessageContent = (message) => {
+    if (message.type === 'multimodal' || message.type === 'image') {
+      return (
+        <Box className="message-with-image">
+          {message.image && (
+            <div className="image-container">
+              <img 
+                src={message.image} 
+                alt="Visualização da resposta"
+                className="response-image"
+                onClick={() => window.open(message.image, '_blank')}
+              />
+            </div>
+          )}
+          <div className="text-content">
             <ReactMarkdown
               components={{
                 code({ node, inline, className, children, ...props }) {
@@ -238,16 +288,26 @@ const ChatPage = () => {
                 },
               }}
             >
-              {parsedContent.content}
+              {message.content}
             </ReactMarkdown>
-          </Box>
-        );
-      }
-    } catch (e) {
-      // Se não for JSON ou não for uma mensagem com imagem, renderiza como texto normal
+          </div>
+        </Box>
+      );
     }
 
-    // Renderização padrão para mensagens de texto
+    let content = message.content;
+    try {
+      if (typeof content === 'string') {
+        const parsed = JSON.parse(content);
+        if (parsed.type === 'multimodal' || parsed.type === 'image') {
+          return renderMessageContent(parsed);
+        }
+        content = parsed.content || content;
+      }
+    } catch (e) {
+      // Use content as is if not JSON
+    }
+
     return (
       <ReactMarkdown
         components={{
@@ -335,7 +395,7 @@ const ChatPage = () => {
             </div>
 
             {studyPlan.topics?.map((topic, index) => (
-              <div key={index} className="topic-item">
+              <div key={topic.id} className="topic-item">
                 <div 
                   className="topic-header"
                   onClick={() => setExpandedSection(
@@ -348,21 +408,39 @@ const ChatPage = () => {
                     ) : (
                       <RadioButtonUncheckedIcon sx={{ color: 'var(--text-secondary)' }} />
                     )}
-                    <Box>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle1">
                         {topic.title}
                       </Typography>
                       <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>
-                        {topic.duration}
+                        {topic.duration} - {topic.progress}% concluído
                       </Typography>
                     </Box>
+                    <Tooltip title="Marcar como concluído">
+                      <IconButton 
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTopicProgress(topic.id, topic.progress === 100 ? 0 : 100);
+                        }}
+                        disabled={updatingProgress}
+                        sx={{ 
+                          color: topic.progress === 100 ? 'var(--success-color)' : 'var(--text-secondary)',
+                          '&:hover': {
+                            color: 'var(--success-color)'
+                          }
+                        }}
+                      >
+                        <PlayArrowIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <ExpandMoreIcon 
+                      sx={{ 
+                        transform: expandedSection === `topic-${index}` ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.3s ease'
+                      }} 
+                    />
                   </Box>
-                  <ExpandMoreIcon 
-                    sx={{ 
-                      transform: expandedSection === `topic-${index}` ? 'rotate(180deg)' : 'none',
-                      transition: 'transform 0.3s ease'
-                    }} 
-                  />
                 </div>
 
                 <Collapse in={expandedSection === `topic-${index}`}>
@@ -403,179 +481,154 @@ const ChatPage = () => {
                         </Typography>
                         {topic.resources.map((resource, resIndex) => (
                           <Typography 
-                          key={resIndex} 
+                            key={resIndex} 
+                            variant="body2" 
+                            sx={{ pl: 3, color: 'var(--text-secondary)' }}
+                          >
+                            • {resource.tipo}: {resource.descricao}
+                          </Typography>
+                        ))}
+                      </div>
+                    )}
+
+                    {topic.activity && (
+                      <div className="activity-section">
+                        <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
+                          Atividade
+                        </Typography>
+                        <Typography 
                           variant="body2" 
                           sx={{ pl: 3, color: 'var(--text-secondary)' }}
                         >
-                          • {resource.tipo}: {resource.descricao}
+                          {topic.activity.descricao}
                         </Typography>
-                      ))}
-                    </div>
-                  )}
+                        <Typography 
+                          variant="caption" 
+                          sx={{ pl: 3, display: 'block', mt: 1, color: 'var(--text-secondary)' }}
+                        >
+                          Tipo: {topic.activity.tipo}
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
+                </Collapse>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Box sx={{ p: 2, textAlign: 'center', color: 'var(--text-secondary)' }}>
+            <Typography>Nenhum plano de estudos encontrado</Typography>
+          </Box>
+        )}
+      </Paper>
+    </>
+  );
 
-                  {topic.activity && (
-                    <div className="activity-section">
-                      <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
-                        Atividade
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ pl: 3, color: 'var(--text-secondary)' }}
-                      >
-                        {topic.activity.descricao}
-                      </Typography>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ pl: 3, display: 'block', mt: 1, color: 'var(--text-secondary)' }}
-                      >
-                        Tipo: {topic.activity.tipo}
-                      </Typography>
-                    </div>
-                  )}
-                </div>
-              </Collapse>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Box sx={{ p: 2, textAlign: 'center', color: 'var(--text-secondary)' }}>
-          <Typography>Nenhum plano de estudos encontrado</Typography>
-        </Box>
-      )}
-    </Paper>
-  </>
-);
+  return (
+    <div className="chat-page-container">
+      <Sidebar />
+      <div className="chat-content-wrapper">
+        <div className="chat-page-content">
+          <Box className="chat-container">
+            <Typography variant="h5" className="chat-header">
+              Chat da Sessão {sessionId} - Disciplina {disciplineId}
+            </Typography>
 
-return (
-  <div className="chat-page-container">
-    <Sidebar />
-    <div className="chat-content-wrapper">
-      <div className="chat-page-content">
-        <Box className="chat-container">
-          <Typography variant="h5" className="chat-header">
-            Chat da Sessão {sessionId} - Disciplina {disciplineId}
-          </Typography>
-
-          {sessionDetails && (
-            <Box className="session-details">
-              <Typography variant="subtitle1">
-                Assunto: {sessionDetails.Assunto}
-              </Typography>
-            </Box>
-          )}
-
-          <Box
-            className="chat-messages"
-            ref={messagesContainerRef}
-            onScroll={handleScroll}
-          >
-            {hasMore && (
-              <Box sx={{ textAlign: 'center', p: 1 }}>
-                {loading ? (
-                  <CircularProgress size={24} />
-                ) : (
-                  <Button onClick={loadMoreMessages} variant="text" color="primary">
-                    Carregar mais
-                  </Button>
-                )}
+            {sessionDetails && (
+              <Box className="session-details">
+                <Typography variant="subtitle1">
+                  Assunto: {sessionDetails.Assunto}
+                </Typography>
               </Box>
             )}
 
-            {messages.map((msg, index) => (
-              <ListItem
-                key={index}
-                className={`chat-message ${msg.role}`}
-              >
-                {msg.role === 'assistant' && (
-                  <ListItemAvatar>
-                    <Avatar src={BotImage} alt="Assistente" />
-                  </ListItemAvatar>
-                )}
-                <Box className="message-content">
-                  {renderMessageContent(msg.content)}
+            <Box
+              className="chat-messages"
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+            >
+              {hasMore && (
+                <Box sx={{ textAlign: 'center', p: 1 }}>
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Button onClick={loadMoreMessages} variant="text" color="primary">
+                      Carregar mais
+                    </Button>
+                  )}
                 </Box>
-              </ListItem>
-            ))}
-            <div ref={messagesEndRef} />
-          </Box>
+              )}
 
-          <Box className="chat-input-container">
-            {file && (
-              <Chip
-                label={file.name}
-                onDelete={removeFile}
-                color="primary"
-                className="file-chip"
-              />
-            )}
-            <Box className="chat-input-wrapper">
-              <IconButton
-                className="file-button"
-                onClick={handleAttachClick}
-                disabled={loading}
-              >
-                <AttachFileIcon />
-              </IconButton>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleFileUpload}
-              />
-              <TextField
-                className="chat-input-field"
-                variant="outlined"
-                placeholder="Digite sua mensagem..."
-                fullWidth
-                multiline
-                maxRows={4}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-              />
-              <Button
-                className="send-button"
-                variant="contained"
-                onClick={handleSendMessage}
-                disabled={loading}
-              >
-                <SendIcon />
-              </Button>
+              {messages.map((msg, index) => (
+                <ListItem
+                  key={index}
+                  className={`chat-message ${msg.role}`}
+                >
+                  {msg.role === 'assistant' && (
+                    <ListItemAvatar>
+                      <Avatar src={BotImage} alt="Assistente" />
+                    </ListItemAvatar>
+                  )}
+                  <Box className="message-content">
+                    {renderMessageContent(msg)}
+                  </Box>
+                </ListItem>
+              ))}
+              <div ref={messagesEndRef} />
+            </Box>
+
+            <Box className="chat-input-container">
+              {file && (
+                <Chip
+                  label={file.name}
+                  onDelete={removeFile}
+                  color="primary"
+                  className="file-chip"
+                />
+              )}
+              <Box className="chat-input-wrapper">
+                <IconButton
+                  className="file-button"
+                  onClick={handleAttachClick}
+                  disabled={loading}
+                >
+                  <AttachFileIcon />
+                </IconButton>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                />
+                <TextField
+                  className="chat-input-field"
+                  variant="outlined"
+                  placeholder="Digite sua mensagem..."
+                  fullWidth
+                  multiline
+                  maxRows={4}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                />
+                <Button
+                  className="send-button"
+                  variant="contained"
+                  onClick={handleSendMessage}
+                  disabled={loading}
+                >
+                  {loading ? <CircularProgress size={24} color="inherit" /> : <SendIcon />}
+                </Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
+        </div>
+        <StudyPlanPanel />
       </div>
-      <StudyPlanPanel />
     </div>
-
-    <style jsx>{`
-      .message-with-image {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-
-      .response-image {
-        object-fit: contain;
-        background-color: #f5f5f5;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: transform 0.2s ease;
-      }
-
-      .response-image:hover {
-        transform: scale(1.02);
-        cursor: pointer;
-      }
-
-      .image-description {
-        margin-top: 8px;
-        color: var(--text-secondary);
-      }
-    `}</style>
-  </div>
-);
+  );
 };
 
 export default ChatPage;

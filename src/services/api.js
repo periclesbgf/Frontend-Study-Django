@@ -1,6 +1,7 @@
 // src/services/api.js
 
 import axios from 'axios';
+import { useState } from 'react';
 
 // Set your backend base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL;
@@ -79,18 +80,83 @@ export const sendPrompt = async (sessionId, prompt, disciplineId, file = null) =
       }
     );
 
+    // Get the actual response content
     const responseData = response.data.response;
     
-    // Se a resposta for um objeto com tipo 'image', retorna diretamente
-    if (responseData && typeof responseData === 'object' && responseData.type === 'image') {
-      return responseData;
+    // If response is a string, try to parse it as JSON
+    if (typeof responseData === 'string') {
+      try {
+        const parsedResponse = JSON.parse(responseData);
+        
+        // Handle multimodal response (text + image)
+        if (parsedResponse.type === 'multimodal') {
+          return {
+            type: 'multimodal',
+            content: parsedResponse.content,
+            image: parsedResponse.image
+          };
+        }
+        
+        // If it's not a multimodal response, return the parsed content
+        return {
+          type: 'text',
+          content: parsedResponse
+        };
+      } catch (e) {
+        // If parsing fails, it's probably plain text
+        return {
+          type: 'text',
+          content: responseData
+        };
+      }
+    }
+    
+    // Handle direct object responses
+    if (responseData && typeof responseData === 'object') {
+      if (responseData.type === 'multimodal') {
+        return {
+          type: 'multimodal',
+          content: responseData.content,
+          image: responseData.image
+        };
+      } else if (responseData.type === 'image') {
+        return {
+          type: 'image',
+          content: responseData.content,
+          image: responseData.image
+        };
+      }
     }
 
-    // Caso contrário, mantém o formato anterior
-    return response.data;
+    // Default case: return the entire response data
+    return {
+      type: 'text',
+      content: response.data
+    };
+
   } catch (error) {
     console.error('Error in sendPrompt:', error);
     throw error.response ? error.response.data : new Error("Failed to send prompt");
+  }
+};
+
+export const updateTopicProgress = async (sessionId, topicId, progress) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/sessions/${sessionId}/topics/${topicId}/progress`,
+      { progress },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error in updateTopicProgress:', error);
+    throw error.response ? error.response.data : new Error("Failed to update topic progress");
   }
 };
 
@@ -398,17 +464,27 @@ export const getDiscipline = async (disciplineId) => {
       },
     });
     
-    // Formata os dados da resposta para incluir os novos campos
-    const discipline = {
-      ...response.data.discipline,
-      studyShift: response.data.discipline.turno_estudo || 'manha',
-      classStartTime: response.data.discipline.horario_inicio || '08:00',
-      classEndTime: response.data.discipline.horario_fim || '10:00'
-    };
+    // O backend agora retorna os dados diretamente no response.data
+    const disciplineData = response.data;
+    console.log('Dados recebidos da API:', disciplineData);
 
-    return discipline;
+    // Format the response data with all available fields
+    return {
+      id: disciplineData.IdCurso,
+      name: disciplineData.discipline_name, // Ajustado para corresponder ao retorno do backend
+      syllabus: disciplineData.Ementa,
+      objectives: disciplineData.Objetivos,
+      classStartTime: disciplineData.HorarioInicio,
+      classEndTime: disciplineData.HorarioFim,
+      createdAt: disciplineData.CriadoEm,
+      educatorId: disciplineData.IdEducador,
+      educatorName: disciplineData.NomeEducador
+    };
   } catch (error) {
+    console.error('Erro na requisição da disciplina:', error);
+    console.error('Detalhes do erro:', error.response?.data);
     handleAuthError(error);
+    throw error;
   }
 };
 
@@ -652,4 +728,135 @@ export const getSessionsWithoutPlan = async () => {
     handleAuthError(error);
     throw error;
   }
+};
+
+const WorkspaceService = {
+  uploadMaterial: async (file, accessLevel, disciplineId = null, sessionId = null) => {
+    const token = getAuthToken();
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('access_level', accessLevel);
+      
+      if (disciplineId) formData.append('discipline_id', disciplineId);
+      if (sessionId) formData.append('session_id', sessionId);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/workspace/upload`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || new Error('Erro ao fazer upload do material');
+    }
+  },
+
+  getMaterials: async (disciplineId = null, sessionId = null) => {
+    const token = getAuthToken();
+    try {
+      const params = {};
+      if (disciplineId) params.discipline_id = disciplineId;
+      if (sessionId) params.session_id = sessionId;
+
+      const response = await axios.get(
+        `${API_BASE_URL}/workspace/materials`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || new Error('Erro ao carregar materiais');
+    }
+  },
+
+  updateMaterialAccess: async (materialId, accessLevel, disciplineId = null, sessionId = null) => {
+    const token = getAuthToken();
+    try {
+      const data = {
+        access_level: accessLevel,
+        discipline_id: disciplineId,
+        session_id: sessionId
+      };
+
+      const response = await axios.put(
+        `${API_BASE_URL}/workspace/material/${materialId}/access`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || new Error('Erro ao atualizar acesso do material');
+    }
+  },
+
+  deleteMaterial: async (materialId) => {
+    const token = getAuthToken();
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/workspace/material/${materialId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || new Error('Erro ao remover material');
+    }
+  }
+};
+
+// Workspace Hook
+export const useWorkspace = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleRequest = async (requestFn) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await requestFn();
+      return result;
+    } catch (err) {
+      const errorMessage = err.response?.data?.detail || err.message;
+      setError(errorMessage);
+      throw errorMessage;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    error,
+    uploadMaterial: (file, accessLevel, disciplineId, sessionId) => 
+      handleRequest(() => WorkspaceService.uploadMaterial(file, accessLevel, disciplineId, sessionId)),
+    getMaterials: (disciplineId, sessionId) => 
+      handleRequest(() => WorkspaceService.getMaterials(disciplineId, sessionId)),
+    updateMaterialAccess: (materialId, accessLevel, disciplineId, sessionId) => 
+      handleRequest(() => WorkspaceService.updateMaterialAccess(materialId, accessLevel, disciplineId, sessionId)),
+    deleteMaterial: (materialId) => 
+      handleRequest(() => WorkspaceService.deleteMaterial(materialId))
+  };
+};
+
+// Adicione o WorkspaceService às exportações existentes
+export {
+  // ... outras exportações existentes
+  WorkspaceService
 };

@@ -41,11 +41,14 @@ import {
   getStudyPlan,
   createAutomaticStudyPlan,
   getSessionsWithoutPlan,
+  getDiscipline,
 } from '../services/api';
 
 const StudySessions = () => {
   const { disciplineId } = useParams();
   const navigate = useNavigate();
+
+  const [disciplineName, setDisciplineName] = useState('');
 
   // Estados principais
   const [sessions, setSessions] = useState([]);
@@ -64,7 +67,6 @@ const StudySessions = () => {
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [editPlan, setEditPlan] = useState('');
-  const [originalOrder, setOriginalOrder] = useState([]);
 
   // Estados para geração automática de plano
   const [openAutoplanModal, setOpenAutoplanModal] = useState(false);
@@ -81,33 +83,43 @@ const StudySessions = () => {
   // Estados para mensagens de erro
   const [error, setError] = useState(null);
 
+  const loadDisciplineDetails = useCallback(async () => {
+    try {
+      const disciplineDetails = await getDiscipline(disciplineId);
+      console.log('Detalhes da disciplina recebidos:', disciplineDetails);
+      
+      // Usando o campo 'name' do objeto retornado
+      setDisciplineName(disciplineDetails.name || 'Disciplina não encontrada');
+      
+      setError(null);
+    } catch (error) {
+      console.error('Erro ao carregar detalhes da disciplina:', error);
+      setError('Erro ao carregar nome da disciplina. Por favor, tente novamente.');
+      setDisciplineName('Disciplina não encontrada');
+    }
+  }, [disciplineId]);
+  
+
+  // Caso queira usar outros campos do objeto retornado, você pode criar estados adicionais
+  const [disciplineDetails, setDisciplineDetails] = useState({
+    syllabus: '',
+    objectives: [],
+    classStartTime: '',
+    classEndTime: '',
+    educatorName: ''
+  });
+
   // Carrega as sessões de estudo
   const loadStudySessions = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getStudySessionFromDiscipline(disciplineId);
       const sessions = response.study_sessions || [];
-      
-      // Se não temos uma ordem original salva ainda, salvamos a ordem atual
-      if (originalOrder.length === 0) {
-        const orderMap = sessions.map(session => session.IdSessao);
-        setOriginalOrder(orderMap);
-        setSessions(sessions);
-      } else {
-        // Ordenamos as sessões baseado na ordem original
-        const orderedSessions = [...sessions].sort((a, b) => {
-          const indexA = originalOrder.indexOf(a.IdSessao);
-          const indexB = originalOrder.indexOf(b.IdSessao);
-          
-          // Se uma sessão não estiver na ordem original, ela vai para o fim
-          if (indexA === -1) return 1;
-          if (indexB === -1) return -1;
-          
-          return indexA - indexB;
-        });
-        
-        setSessions(orderedSessions);
-      }
+  
+      // Ordene as sessões por 'IdSessao'
+      const sortedSessions = sessions.sort((a, b) => a.IdSessao - b.IdSessao);
+  
+      setSessions(sortedSessions);
       setError(null);
     } catch (error) {
       console.error('Erro ao carregar sessões de estudo:', error);
@@ -115,7 +127,13 @@ const StudySessions = () => {
     } finally {
       setLoading(false);
     }
-  }, [disciplineId, originalOrder]);
+  }, [disciplineId]);
+
+  useEffect(() => {
+    // Load both discipline details and study sessions
+    loadDisciplineDetails();
+    loadStudySessions();
+  }, [loadDisciplineDetails, loadStudySessions]);
 
   // Carrega sessões sem plano
   const loadSessionsWithoutPlan = async () => {
@@ -258,7 +276,7 @@ const StudySessions = () => {
       <Sidebar />
       <div className="study-sessions-content">
         <Typography variant="h3" align="center" gutterBottom sx={{ color: '#ffffff' }}>
-          Sessões de Estudo - Disciplina {disciplineId}
+          Sessões de Estudo - {disciplineName}
         </Typography>
 
         {error && (
