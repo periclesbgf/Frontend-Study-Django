@@ -9,7 +9,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
 } from '@mui/material';
 import {
   School,
@@ -51,35 +50,41 @@ const Home = () => {
     <Box className="home-container">
       {/* Hero Section */}
       <Box className="hero-section">
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography variant="h1" className="hero-title">
-                Bem-vindo ao Eden AI
-              </Typography>
-              <Typography variant="h5" className="hero-subtitle">
-                Agente de Aprendizado Inteligente para Estudantes
-              </Typography>
-              <Box className="hero-buttons">
-                <Button
-                  component={Link}
-                  to="/register-student"
-                  variant="contained"
-                  className="hero-button student"
-                  startIcon={<School />}
-                >
-                  Sou Estudante
-                </Button>
-                <Button
-                  component={Link}
-                  to="/register-teacher"
-                  variant="contained"
-                  className="hero-button teacher"
-                  startIcon={<Person />}
-                >
-                  Sou Professor
-                </Button>
-              </Box>
+              <div className="hero-content">
+                <Typography variant="h1" className="hero-title">
+                  Bem-vindo ao Eden AI
+                </Typography>
+                <Typography variant="h5" className="hero-subtitle">
+                  Agente de Aprendizado Inteligente para Estudantes
+                </Typography>
+                {/* Descrição Rápida */}
+                <Typography variant="body1" className="hero-description">
+                  Eden AI é uma plataforma desenvolvida para aprimorar a experiência educacional, conectando alunos e professores de maneira personalizada. Com o Eden AI, os alunos podem acessar sessões de estudo personalizadas, acompanhar seu progresso acadêmico e colaborar com educadores em tempo real. Nosso objetivo é proporcionar uma experiência de aprendizado integrada, utilizando tecnologia generativa para atender às necessidades individuais de cada aluno.
+                </Typography>
+                <Box className="hero-buttons">
+                  <Button
+                    component={Link}
+                    to="/register-student"
+                    variant="contained"
+                    className="hero-button student"
+                    startIcon={<School />}
+                  >
+                    Sou Estudante
+                  </Button>
+                  <Button
+                    component={Link}
+                    to="/register-teacher"
+                    variant="contained"
+                    className="hero-button teacher"
+                    startIcon={<Person />}
+                  >
+                    Sou Professor
+                  </Button>
+                </Box>
+              </div>
             </Grid>
             <Grid item xs={12} md={6} className="hero-image-container">
               <img 

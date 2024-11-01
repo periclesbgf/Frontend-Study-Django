@@ -26,6 +26,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ImageIcon from '@mui/icons-material/Image';
 import { 
   sendPrompt, 
   getStudySessionById, 
@@ -52,6 +54,7 @@ const ChatPage = () => {
   const [expandedSection, setExpandedSection] = useState('');
   const [isStudyPlanOpen, setIsStudyPlanOpen] = useState(false);
   const [updatingProgress, setUpdatingProgress] = useState(false);
+  const [zoomImage, setZoomImage] = useState(null);
   
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -61,6 +64,34 @@ const ChatPage = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleCloseModal = (e) => {
+    if (e.target.classList.contains('image-modal-overlay')) {
+      setZoomImage(null);
+    }
+  };
+
+  const ImageModal = () => {
+    if (!zoomImage) return null;
+
+    return (
+      <div 
+        className={`image-modal-overlay ${zoomImage ? 'open' : ''}`} 
+        onClick={handleCloseModal}
+      >
+        <div className="image-modal-content">
+          <IconButton
+            className="close-modal-button"
+            onClick={() => setZoomImage(null)}
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+          <img src={zoomImage} alt="Visualização ampliada" />
+        </div>
+      </div>
+    );
   };
 
   const loadSessionDetails = useCallback(async () => {
@@ -153,6 +184,29 @@ const ChatPage = () => {
     }
   };
 
+  const handleFileUpload = (event) => {
+    const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
+    
+    // Verificar o tamanho do arquivo (limite de 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (selectedFile.size > maxSize) {
+      alert('O arquivo é muito grande. Por favor, selecione um arquivo menor que 10MB.');
+      if (fileInputRef.current) fileInputRef.current.value = null;
+      return;
+    }
+
+    // Verificar o tipo do arquivo
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      alert('Tipo de arquivo não suportado. Por favor, selecione um PDF ou imagem.');
+      if (fileInputRef.current) fileInputRef.current.value = null;
+      return;
+    }
+
+    setFile(selectedFile);
+  };
+
   const handleSendMessage = async () => {
     if ((!input.trim() && !file) || loading) return;
 
@@ -209,12 +263,6 @@ const ChatPage = () => {
     }
   };
 
-  const handleFileUpload = (event) => {
-    const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
-    setFile(selectedFile);
-  };
-
   const handleAttachClick = () => {
     if (fileInputRef.current) fileInputRef.current.click();
   };
@@ -267,7 +315,7 @@ const ChatPage = () => {
                 src={message.image} 
                 alt="Visualização da resposta"
                 className="response-image"
-                onClick={() => window.open(message.image, '_blank')}
+                onClick={() => setZoomImage(message.image)}
               />
             </div>
           )}
@@ -381,7 +429,6 @@ const ChatPage = () => {
                 />
               </div>
             </div>
-
             <div className="plan-description">
               <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
                 {studyPlan.description}
@@ -584,6 +631,7 @@ const ChatPage = () => {
                   onDelete={removeFile}
                   color="primary"
                   className="file-chip"
+                  icon={file.type === 'application/pdf' ? <PictureAsPdfIcon /> : <ImageIcon />}
                 />
               )}
               <Box className="chat-input-wrapper">
@@ -599,7 +647,7 @@ const ChatPage = () => {
                   ref={fileInputRef}
                   style={{ display: 'none' }}
                   onChange={handleFileUpload}
-                  accept="image/*"
+                  accept=".pdf,image/*"
                 />
                 <TextField
                   className="chat-input-field"
@@ -627,6 +675,7 @@ const ChatPage = () => {
         </div>
         <StudyPlanPanel />
       </div>
+      <ImageModal />
     </div>
   );
 };
