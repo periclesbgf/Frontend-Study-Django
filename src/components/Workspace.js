@@ -1,5 +1,3 @@
-// src/components/Workspace.js
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
@@ -31,22 +29,12 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Delete as DeleteIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
-import {
-  uploadMaterial,
-  getMaterials,
-  updateMaterialAccess,
-  deleteMaterial,
-  getDisciplines,
-  getStudySessions,
-} from '../services/api';
-import '../styles/Workspace.css';
 
 const Workspace = () => {
-  const [materials, setMaterials] = useState([]);
-  const [disciplines, setDisciplines] = useState([]);
-  const [sessions, setSessions] = useState([]);
+  const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,33 +43,61 @@ const Workspace = () => {
   const [accessLevel, setAccessLevel] = useState('global');
   const [selectedDestination, setSelectedDestination] = useState(null);
 
-  // Fetch materials, disciplines, and sessions when the component mounts
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [materialsData, disciplinesData] = await Promise.all([
-          getMaterials(),
-          getDisciplines(),
-        ]);
-
-        // Fetch sessions for each discipline
-        const sessionsData = await Promise.all(
-          disciplinesData.map((discipline) =>
-            getStudySessions(discipline.id)
-          )
-        );
-
-        setMaterials(materialsData.materials);
-        setDisciplines(disciplinesData);
-        setSessions(sessionsData.flat());
-        setLoading(false);
-      } catch (err) {
-        setError('Erro ao carregar dados');
-        setLoading(false);
+  // Mock data structure with global files, disciplines, and sessions
+  const [fileStructure, setFileStructure] = useState({
+    global: {
+      id: 'global',
+      title: 'Arquivos Globais',
+      files: [
+        { id: 'g1', name: 'Global1.pdf', type: 'pdf', size: '2.4 MB', updated: '2024-03-15' },
+        { id: 'g2', name: 'Global2.docx', type: 'doc', size: '1.1 MB', updated: '2024-03-14' },
+      ]
+    },
+    disciplines: [
+      {
+        id: 'disc1',
+        name: 'Cálculo I',
+        files: [
+          { id: 'd1', name: 'Derivadas.pdf', type: 'pdf', size: '2.4 MB', updated: '2024-03-15' }
+        ],
+        sessions: [
+          {
+            id: 'sess1',
+            name: 'Limites e Continuidade',
+            files: [
+              { id: 's1', name: 'Exercícios.pdf', type: 'pdf', size: '1.5 MB', updated: '2024-03-15' }
+            ]
+          },
+          {
+            id: 'sess2',
+            name: 'Derivadas',
+            files: [
+              { id: 's2', name: 'Notas.docx', type: 'doc', size: '1.2 MB', updated: '2024-03-14' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'disc2',
+        name: 'Física I',
+        files: [
+          { id: 'd2', name: 'Mecânica.pdf', type: 'pdf', size: '3.1 MB', updated: '2024-03-13' }
+        ],
+        sessions: [
+          {
+            id: 'sess3',
+            name: 'Cinemática',
+            files: [
+              { id: 's3', name: 'Exercícios.pdf', type: 'pdf', size: '1.8 MB', updated: '2024-03-12' }
+            ]
+          }
+        ]
       }
-    };
-    fetchData();
+    ]
+  });
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
   const getFileIcon = useCallback((type) => {
@@ -89,11 +105,8 @@ const Workspace = () => {
       case 'pdf':
         return <FileTextIcon sx={{ color: '#ef4444' }} />;
       case 'doc':
-      case 'docx':
         return <FileTextIcon sx={{ color: '#3b82f6' }} />;
-      case 'jpg':
-      case 'png':
-      case 'jpeg':
+      case 'image':
         return <ImageIcon sx={{ color: '#10b981' }} />;
       default:
         return <FileTextIcon sx={{ color: '#6b7280' }} />;
@@ -101,141 +114,142 @@ const Workspace = () => {
   }, []);
 
   const toggleSession = (sessionId) => {
-    setExpandedSessions((prev) => ({
+    setExpandedSessions(prev => ({
       ...prev,
-      [sessionId]: !prev[sessionId],
+      [sessionId]: !prev[sessionId]
     }));
   };
 
-  const handleDragEnd = async (result) => {
-    const { destination, draggableId } = result;
+  const handleDragEnd = (result) => {
+    const { source, destination, draggableId } = result;
 
     if (!destination) return;
 
-    try {
-      // Determine new access level based on destination
-      let newAccessLevel =
-        destination.droppableId === 'global'
-          ? 'global'
-          : destination.droppableId.startsWith('discipline-')
-          ? 'discipline'
-          : 'session';
+    const newFileStructure = { ...fileStructure };
+    let fileToMove;
 
-      // Extract IDs from destination
-      const [, destId] = destination.droppableId.split('-');
+    // Helper function to find and remove file
+    const findAndRemoveFile = (container) => {
+      const fileIndex = container.files.findIndex(f => f.id === draggableId);
+      if (fileIndex !== -1) {
+        fileToMove = container.files[fileIndex];
+        container.files.splice(fileIndex, 1);
+        return true;
+      }
+      return false;
+    };
 
-      // Update material access
-      await updateMaterialAccess(
-        draggableId,
-        newAccessLevel,
-        newAccessLevel === 'discipline' ? destId : null,
-        newAccessLevel === 'session' ? destId : null
-      );
-
-      // Reload materials
-      const materialsData = await getMaterials();
-      setMaterials(materialsData.materials);
-    } catch (error) {
-      console.error('Erro ao mover arquivo:', error);
-      setError('Erro ao mover o arquivo');
+    // Remove file from source
+    if (source.droppableId === 'global') {
+      findAndRemoveFile(newFileStructure.global);
+    } else {
+      const [sourceType, sourceId] = source.droppableId.split('-');
+      if (sourceType === 'discipline') {
+        const discipline = newFileStructure.disciplines.find(d => d.id === sourceId);
+        if (discipline) findAndRemoveFile(discipline);
+      } else if (sourceType === 'session') {
+        newFileStructure.disciplines.forEach(discipline => {
+          discipline.sessions.forEach(session => {
+            if (session.id === sourceId) {
+              findAndRemoveFile(session);
+            }
+          });
+        });
+      }
     }
+
+    // Add file to destination
+    if (destination.droppableId === 'global') {
+      newFileStructure.global.files.push(fileToMove);
+    } else {
+      const [destType, destId] = destination.droppableId.split('-');
+      if (destType === 'discipline') {
+        const discipline = newFileStructure.disciplines.find(d => d.id === destId);
+        if (discipline) discipline.files.push(fileToMove);
+      } else if (destType === 'session') {
+        newFileStructure.disciplines.forEach(discipline => {
+          discipline.sessions.forEach(session => {
+            if (session.id === destId) {
+              session.files.push(fileToMove);
+            }
+          });
+        });
+      }
+    }
+
+    setFileStructure(newFileStructure);
   };
 
   const handleFileUpload = async () => {
     if (!uploadFile) return;
-
+    
     try {
-      await uploadMaterial(
-        uploadFile,
-        accessLevel,
-        accessLevel === 'discipline' ? selectedDestination : null,
-        accessLevel === 'session' ? selectedDestination : null
-      );
+      // Aqui você implementaria a lógica real de upload
+      console.log('Uploading file:', uploadFile);
+      console.log('Access level:', accessLevel);
+      console.log('Destination:', selectedDestination);
+      
+      // Simula sucesso do upload
+      let newFile = {
+        id: `new-${Date.now()}`,
+        name: uploadFile.name,
+        type: uploadFile.name.split('.').pop().toLowerCase(),
+        size: `${(uploadFile.size / (1024 * 1024)).toFixed(1)} MB`,
+        updated: new Date().toISOString().split('T')[0]
+      };
 
-      // Reset modal state
+      const newFileStructure = { ...fileStructure };
+
+      // Adiciona o arquivo no local apropriado baseado no access level
+      if (accessLevel === 'global') {
+        newFileStructure.global.files.push(newFile);
+      } else if (accessLevel === 'discipline' && selectedDestination) {
+        const discipline = newFileStructure.disciplines.find(d => d.id === selectedDestination);
+        if (discipline) {
+          discipline.files.push(newFile);
+        }
+      } else if (accessLevel === 'session' && selectedDestination) {
+        newFileStructure.disciplines.forEach(discipline => {
+          discipline.sessions.forEach(session => {
+            if (session.id === selectedDestination) {
+              session.files.push(newFile);
+            }
+          });
+        });
+      }
+
+      setFileStructure(newFileStructure);
       setOpenUploadModal(false);
       setUploadFile(null);
       setAccessLevel('global');
       setSelectedDestination(null);
-
-      // Reload materials
-      const materialsData = await getMaterials();
-      setMaterials(materialsData.materials);
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
       setError('Erro ao fazer upload do arquivo. Tente novamente.');
     }
   };
 
-  const handleDeleteFile = async (materialId) => {
-    try {
-      await deleteMaterial(materialId);
-      // Reload materials
-      const materialsData = await getMaterials();
-      setMaterials(materialsData.materials);
-    } catch (error) {
-      console.error('Erro ao deletar arquivo:', error);
-      setError('Erro ao deletar o arquivo');
-    }
-  };
-
-  // Organize materials into a structured format
-  const organizeMaterials = () => {
-    const fileStructure = {
-      global: {
-        id: 'global',
-        title: 'Arquivos Globais',
-        files: [],
-      },
-      disciplines: [],
-    };
-
-    // Separate global materials
-    fileStructure.global.files = materials.filter(
-      (m) => m.access_level === 'global'
-    );
-
-    // For each discipline
-    disciplines.forEach((discipline) => {
-      const disciplineMaterials = materials.filter(
-        (m) =>
-          m.access_level === 'discipline' && m.discipline_id === discipline.id
-      );
-
-      const disciplineSessions = sessions.filter(
-        (s) => s.discipline_id === discipline.id
-      );
-
-      const disciplineItem = {
-        id: discipline.id,
-        name: discipline.name,
-        files: disciplineMaterials,
-        sessions: [],
-      };
-
-      // For each session in the discipline
-      disciplineSessions.forEach((session) => {
-        const sessionMaterials = materials.filter(
-          (m) =>
-            m.access_level === 'session' && m.session_id === session.id
-        );
-
-        const sessionItem = {
-          id: session.id,
-          name: session.name,
-          files: sessionMaterials,
-        };
-
-        disciplineItem.sessions.push(sessionItem);
+  const handleDeleteFile = (fileId, containerId, type) => {
+    const newFileStructure = { ...fileStructure };
+    
+    if (type === 'global') {
+      newFileStructure.global.files = newFileStructure.global.files.filter(f => f.id !== fileId);
+    } else if (type === 'discipline') {
+      const discipline = newFileStructure.disciplines.find(d => d.id === containerId);
+      if (discipline) {
+        discipline.files = discipline.files.filter(f => f.id !== fileId);
+      }
+    } else if (type === 'session') {
+      newFileStructure.disciplines.forEach(discipline => {
+        discipline.sessions.forEach(session => {
+          if (session.id === containerId) {
+            session.files = session.files.filter(f => f.id !== fileId);
+          }
+        });
       });
+    }
 
-      fileStructure.disciplines.push(disciplineItem);
-    });
-
-    return fileStructure;
+    setFileStructure(newFileStructure);
   };
-
-  const fileStructure = organizeMaterials();
 
   const renderFileList = (files, droppableId, containerType, containerId) => (
     <Droppable droppableId={droppableId}>
@@ -243,9 +257,7 @@ const Workspace = () => {
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
-          className={`droppable-area ${
-            snapshot.isDraggingOver ? 'drag-over' : ''
-          }`}
+          className={`droppable-area ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
         >
           {files.map((file, index) => (
             <Draggable key={file.id} draggableId={file.id} index={index}>
@@ -254,15 +266,13 @@ const Workspace = () => {
                   ref={provided.innerRef}
                   {...provided.draggableProps}
                   {...provided.dragHandleProps}
-                  className={`draggable-item ${
-                    snapshot.isDragging ? 'dragging' : ''
-                  }`}
+                  className={`draggable-item ${snapshot.isDragging ? 'dragging' : ''}`}
                   sx={{
                     mb: 1,
                     backgroundColor: '#42464d',
                     '&:hover': {
                       backgroundColor: '#45494f',
-                    },
+                    }
                   }}
                 >
                   <CardContent>
@@ -271,16 +281,13 @@ const Workspace = () => {
                       <Typography sx={{ color: '#ffffff' }}>
                         {file.name}
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: '#b9bbbe', ml: 'auto' }}
-                      >
+                      <Typography variant="caption" sx={{ color: '#b9bbbe', ml: 'auto' }}>
                         {file.size}
                       </Typography>
                       <IconButton
                         size="small"
                         sx={{ color: '#ef4444' }}
-                        onClick={() => handleDeleteFile(file.id)}
+                        onClick={() => handleDeleteFile(file.id, containerId, containerType)}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -301,12 +308,7 @@ const Workspace = () => {
       <div className="workspace-container">
         <Sidebar />
         <div className="workspace-content">
-          <Typography
-            variant="h3"
-            align="center"
-            gutterBottom
-            sx={{ color: '#ffffff' }}
-          >
+          <Typography variant="h3" align="center" gutterBottom sx={{ color: '#ffffff' }}>
             Workspace
           </Typography>
 
@@ -324,8 +326,8 @@ const Workspace = () => {
               sx={{
                 backgroundColor: '#5865F2',
                 '&:hover': {
-                  backgroundColor: '#4752C4',
-                },
+                  backgroundColor: '#4752C4'
+                }
               }}
             >
               Upload de Arquivo
@@ -342,21 +344,11 @@ const Workspace = () => {
               <Grid item xs={12}>
                 <Card sx={{ backgroundColor: '#36393f', mb: 3 }}>
                   <CardContent>
-                    <Typography
-                      variant="h6"
-                      sx={{ color: '#ffffff', mb: 2 }}
-                    >
-                      <GlobeIcon
-                        sx={{ mr: 1, verticalAlign: 'middle' }}
-                      />
+                    <Typography variant="h6" sx={{ color: '#ffffff', mb: 2 }}>
+                      <GlobeIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                       Arquivos Globais
                     </Typography>
-                    {renderFileList(
-                      fileStructure.global.files,
-                      'global',
-                      'global',
-                      'global'
-                    )}
+                    {renderFileList(fileStructure.global.files, 'global', 'global', 'global')}
                   </CardContent>
                 </Card>
               </Grid>
@@ -366,53 +358,27 @@ const Workspace = () => {
                 <Grid item xs={12} md={6} key={discipline.id}>
                   <Card sx={{ backgroundColor: '#36393f' }}>
                     <CardContent>
-                      <Typography
-                        variant="h6"
-                        sx={{ color: '#ffffff', mb: 2 }}
-                      >
-                        <BookIcon
-                          sx={{ mr: 1, verticalAlign: 'middle' }}
-                        />
+                      <Typography variant="h6" sx={{ color: '#ffffff', mb: 2 }}>
+                        <BookIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                         {discipline.name}
                       </Typography>
-
+                      
                       {/* Discipline Files */}
-                      {renderFileList(
-                        discipline.files,
-                        `discipline-${discipline.id}`,
-                        'discipline',
-                        discipline.id
-                      )}
+                      {renderFileList(discipline.files, `discipline-${discipline.id}`, 'discipline', discipline.id)}
 
                       {/* Sessions */}
                       {discipline.sessions.map((session) => (
                         <Box key={session.id} sx={{ mt: 2 }}>
                           <Button
                             onClick={() => toggleSession(session.id)}
-                            sx={{
-                              color: '#ffffff',
-                              textTransform: 'none',
-                              width: '100%',
-                              justifyContent: 'flex-start',
-                            }}
+                            sx={{ color: '#ffffff', textTransform: 'none', width: '100%', justifyContent: 'flex-start' }}
                           >
-                            {expandedSessions[session.id] ? (
-                              <ExpandLessIcon />
-                            ) : (
-                              <ExpandMoreIcon />
-                            )}
-                            <Typography sx={{ ml: 1 }}>
-                              {session.name}
-                            </Typography>
+                            {expandedSessions[session.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                            <Typography sx={{ ml: 1 }}>{session.name}</Typography>
                           </Button>
                           <Collapse in={expandedSessions[session.id]}>
                             <Box sx={{ pl: 4 }}>
-                              {renderFileList(
-                                session.files,
-                                `session-${session.id}`,
-                                'session',
-                                session.id
-                              )}
+                              {renderFileList(session.files, `session-${session.id}`, 'session', session.id)}
                             </Box>
                           </Collapse>
                         </Box>
@@ -437,17 +403,15 @@ const Workspace = () => {
               },
             }}
           >
-            <DialogTitle
-              sx={{
-                backgroundColor: '#2f3136',
-                color: '#ffffff',
-                borderBottom: '1px solid #4f545c',
-              }}
-            >
+            <DialogTitle sx={{ 
+              backgroundColor: '#2f3136',
+              color: '#ffffff',
+              borderBottom: '1px solid #4f545c'
+            }}>
               Upload de Arquivo
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
-              <Box
+            <Box
                 className={`upload-zone ${uploadFile ? 'has-file' : ''}`}
                 sx={{
                   border: '2px dashed #4f545c',
@@ -458,8 +422,8 @@ const Workspace = () => {
                   cursor: 'pointer',
                   '&:hover': {
                     borderColor: '#5865F2',
-                    backgroundColor: 'rgba(88, 101, 242, 0.1)',
-                  },
+                    backgroundColor: 'rgba(88, 101, 242, 0.1)'
+                  }
                 }}
               >
                 <input
@@ -469,22 +433,15 @@ const Workspace = () => {
                   id="file-input"
                 />
                 <label htmlFor="file-input" style={{ cursor: 'pointer' }}>
-                  <UploadIcon
-                    sx={{ fontSize: 40, color: '#b9bbbe', mb: 1 }}
-                  />
+                  <UploadIcon sx={{ fontSize: 40, color: '#b9bbbe', mb: 1 }} />
                   <Typography sx={{ color: '#ffffff' }}>
-                    {uploadFile
-                      ? uploadFile.name
-                      : 'Clique ou arraste um arquivo aqui'}
+                    {uploadFile ? uploadFile.name : 'Clique ou arraste um arquivo aqui'}
                   </Typography>
                 </label>
               </Box>
-
+              
               <FormControl fullWidth sx={{ mt: 2 }}>
-                <InputLabel
-                  id="access-level-label"
-                  sx={{ color: '#b9bbbe' }}
-                >
+                <InputLabel id="access-level-label" sx={{ color: '#b9bbbe' }}>
                   Nível de Acesso
                 </InputLabel>
                 <Select
@@ -499,8 +456,8 @@ const Workspace = () => {
                     bgcolor: '#40444b',
                     color: '#ffffff',
                     '& .MuiSelect-icon': {
-                      color: '#b9bbbe',
-                    },
+                      color: '#b9bbbe'
+                    }
                   }}
                 >
                   <MenuItem value="global">Global</MenuItem>
@@ -509,63 +466,48 @@ const Workspace = () => {
                 </Select>
               </FormControl>
 
-              {/* Conditional destination selection */}
+              {/* Seleção condicional de destino */}
               {accessLevel !== 'global' && (
                 <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel
-                    id="destination-label"
-                    sx={{ color: '#b9bbbe' }}
-                  >
-                    {accessLevel === 'discipline'
-                      ? 'Selecione a Disciplina'
-                      : 'Selecione a Sessão'}
+                  <InputLabel id="destination-label" sx={{ color: '#b9bbbe' }}>
+                    {accessLevel === 'discipline' ? 'Selecione a Disciplina' : 'Selecione a Sessão'}
                   </InputLabel>
                   <Select
                     labelId="destination-label"
                     value={selectedDestination || ''}
-                    onChange={(e) =>
-                      setSelectedDestination(e.target.value)
-                    }
-                    label={
-                      accessLevel === 'discipline'
-                        ? 'Selecione a Disciplina'
-                        : 'Selecione a Sessão'
-                    }
+                    onChange={(e) => setSelectedDestination(e.target.value)}
+                    label={accessLevel === 'discipline' ? 'Selecione a Disciplina' : 'Selecione a Sessão'}
                     sx={{
                       bgcolor: '#40444b',
                       color: '#ffffff',
                       '& .MuiSelect-icon': {
-                        color: '#b9bbbe',
-                      },
+                        color: '#b9bbbe'
+                      }
                     }}
                   >
-                    {accessLevel === 'discipline'
-                      ? disciplines.map((discipline) => (
-                          <MenuItem
-                            key={discipline.id}
-                            value={discipline.id}
-                          >
-                            {discipline.name}
+                    {accessLevel === 'discipline' ? (
+                      fileStructure.disciplines.map(discipline => (
+                        <MenuItem key={discipline.id} value={discipline.id}>
+                          {discipline.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      fileStructure.disciplines.map(discipline => 
+                        discipline.sessions.map(session => (
+                          <MenuItem key={session.id} value={session.id}>
+                            {`${discipline.name} - ${session.name}`}
                           </MenuItem>
                         ))
-                      : sessions.map((session) => (
-                          <MenuItem
-                            key={session.id}
-                            value={session.id}
-                          >
-                            {session.name}
-                          </MenuItem>
-                        ))}
+                      )
+                    )}
                   </Select>
                 </FormControl>
               )}
             </DialogContent>
-            <DialogActions
-              sx={{
-                borderTop: '1px solid #4f545c',
-                padding: '16px 24px',
-              }}
-            >
+            <DialogActions sx={{ 
+              borderTop: '1px solid #4f545c',
+              padding: '16px 24px'
+            }}>
               <Button
                 onClick={() => {
                   setOpenUploadModal(false);
@@ -579,19 +521,16 @@ const Workspace = () => {
               </Button>
               <Button
                 onClick={handleFileUpload}
-                disabled={
-                  !uploadFile ||
-                  (accessLevel !== 'global' && !selectedDestination)
-                }
+                disabled={!uploadFile || (accessLevel !== 'global' && !selectedDestination)}
                 variant="contained"
                 sx={{
                   backgroundColor: '#5865F2',
                   '&:hover': {
-                    backgroundColor: '#4752C4',
+                    backgroundColor: '#4752C4'
                   },
                   '&.Mui-disabled': {
-                    backgroundColor: '#40444b',
-                  },
+                    backgroundColor: '#40444b'
+                  }
                 }}
               >
                 Upload
