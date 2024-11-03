@@ -475,6 +475,9 @@
 .message-with-image .response-image {
   cursor: zoom-in;
 }
+
+
+
 /* Animations */
 @keyframes messageAppear {
   from {

@@ -434,6 +434,29 @@ export const updateCalendarEvent = async (eventId, { title, description, start_t
   }
 };
 
+export const updateStepProgress = async (sessionId, stepIndex, progress) => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/study_plan/${sessionId}/progress`,
+      {
+        step_index: stepIndex,
+        progress: progress
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error in updateStepProgress:', error);
+    throw error.response ? error.response.data : new Error("Failed to update step progress");
+  }
+};
+
 // Função para deletar um evento no calendário
 export const deleteCalendarEvent = async (eventId) => {
   const token = getAuthToken();

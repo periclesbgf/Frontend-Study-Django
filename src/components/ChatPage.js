@@ -33,7 +33,7 @@ import {
   getStudySessionById, 
   getChatHistory, 
   getStudyPlan,
-  updateTopicProgress 
+  updateStepProgress 
 } from '../services/api';
 import '../styles/ChatPage.css';
 
@@ -154,31 +154,37 @@ const ChatPage = () => {
     loadStudyPlan();
   }, [loadSessionDetails, loadStudyPlan]);
 
-  const handleTopicProgress = async (topicId, newProgress) => {
+  const handleTopicProgress = async (topicIndex, newProgress) => {
     if (updatingProgress) return;
     
     setUpdatingProgress(true);
     try {
-      await updateTopicProgress(sessionId, topicId, newProgress);
+      // Chamar o novo endpoint
+      const response = await updateStepProgress(sessionId, topicIndex, newProgress);
       
-      setStudyPlan(prevPlan => ({
-        ...prevPlan,
-        topics: prevPlan.topics.map(topic => 
-          topic.id === topicId
-            ? {
-                ...topic,
-                progress: newProgress,
-                subtopics: topic.subtopics.map((subtopic, index) => ({
-                  ...subtopic,
-                  completed: newProgress > (index + 1) * (100 / topic.subtopics.length)
-                }))
-              }
-            : topic
-        )
-      }));
+      // Atualizar o estado local com os dados retornados
+      if (response.data) {
+        setStudyPlan(prevPlan => ({
+          ...prevPlan,
+          topics: prevPlan.topics.map((topic, index) => 
+            index === topicIndex
+              ? {
+                  ...topic,
+                  progress: newProgress,
+                  subtopics: topic.subtopics.map((subtopic, subIndex) => ({
+                    ...subtopic,
+                    completed: newProgress > (subIndex + 1) * (100 / topic.subtopics.length)
+                  }))
+                }
+              : topic
+          )
+        }));
+      }
       
     } catch (error) {
       console.error('Erro ao atualizar progresso:', error);
+      // Opcional: Mostrar mensagem de erro para o usuário
+      // toast.error('Erro ao atualizar progresso');
     } finally {
       setUpdatingProgress(false);
     }
@@ -207,6 +213,7 @@ const ChatPage = () => {
     setFile(selectedFile);
   };
 
+  
   const handleSendMessage = async () => {
     if ((!input.trim() && !file) || loading) return;
 
@@ -389,187 +396,194 @@ const ChatPage = () => {
     return Math.round(totalProgress / studyPlan.topics.length);
   };
 
-  const StudyPlanPanel = () => (
-    <>
-      <Button
-        className="study-plan-toggle"
-        onClick={() => setIsStudyPlanOpen(!isStudyPlanOpen)}
-        startIcon={isStudyPlanOpen ? <CloseIcon /> : <MenuBookIcon />}
-      >
-        {isStudyPlanOpen ? 'Fechar Plano' : 'Plano de Estudos'}
-      </Button>
-
-      <Paper className={`study-plan-panel ${isStudyPlanOpen ? 'open' : ''}`}>
-        <div className="plan-header">
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MenuBookIcon />
-            Plano de Estudos
-          </Typography>
-          {studyPlan && (
-            <Typography variant="subtitle2" sx={{ mt: 1, color: 'var(--text-secondary)' }}>
-              {studyPlan.title}
+  const StudyPlanPanel = () => {
+    return (
+      <>
+        <Button
+          className="study-plan-toggle"
+          onClick={() => setIsStudyPlanOpen(!isStudyPlanOpen)}
+          startIcon={isStudyPlanOpen ? <CloseIcon /> : <MenuBookIcon />}
+        >
+          {isStudyPlanOpen ? 'Fechar Plano' : 'Plano de Estudos'}
+        </Button>
+  
+        <Paper className={`study-plan-panel ${isStudyPlanOpen ? 'open' : ''}`}>
+          <div className="plan-header">
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MenuBookIcon />
+              Plano de Estudos
             </Typography>
-          )}
-        </div>
-
-        {loadingPlan ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <CircularProgress />
-          </Box>
-        ) : studyPlan ? (
-          <div className="study-plan-content">
-            <div className="progress-indicator">
-              <Typography variant="body2">
-                Progresso Total: {calculateProgress()}%
+            {studyPlan && (
+              <Typography variant="subtitle2" sx={{ mt: 1, color: 'var(--text-secondary)' }}>
+                {studyPlan.title}
               </Typography>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${calculateProgress()}%` }} 
-                />
-              </div>
-            </div>
-            <div className="plan-description">
-              <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
-                {studyPlan.description}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 3, color: 'var(--text-secondary)' }}>
-                <strong>Objetivo:</strong> {studyPlan.objective}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
-                Duração Total: {studyPlan.totalDuration}
-              </Typography>
-            </div>
-
-            {studyPlan.topics?.map((topic, index) => (
-              <div key={topic.id} className="topic-item">
-                <div 
-                  className="topic-header"
-                  onClick={() => setExpandedSection(
-                    expandedSection === `topic-${index}` ? '' : `topic-${index}`
-                  )}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                    {topic.progress === 100 ? (
-                      <CheckCircleIcon sx={{ color: 'var(--success-color)' }} />
-                    ) : (
-                      <RadioButtonUncheckedIcon sx={{ color: 'var(--text-secondary)' }} />
-                    )}
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1">
-                        {topic.title}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>
-                        {topic.duration} - {topic.progress}% concluído
-                      </Typography>
-                    </Box>
-                    <Tooltip title="Marcar como concluído">
-                      <IconButton 
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTopicProgress(topic.id, topic.progress === 100 ? 0 : 100);
-                        }}
-                        disabled={updatingProgress}
-                        sx={{ 
-                          color: topic.progress === 100 ? 'var(--success-color)' : 'var(--text-secondary)',
-                          '&:hover': {
-                            color: 'var(--success-color)'
-                          }
-                        }}
-                      >
-                        <PlayArrowIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <ExpandMoreIcon 
-                      sx={{ 
-                        transform: expandedSection === `topic-${index}` ? 'rotate(180deg)' : 'none',
-                        transition: 'transform 0.3s ease'
-                      }} 
-                    />
-                  </Box>
+            )}
+          </div>
+  
+          {loadingPlan ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : studyPlan ? (
+            <div className="study-plan-content">
+              <div className="progress-indicator">
+                <Typography variant="body2">
+                  Progresso Total: {calculateProgress()}%
+                </Typography>
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${calculateProgress()}%` }} 
+                  />
                 </div>
-
-                <Collapse in={expandedSection === `topic-${index}`}>
-                  <div className="topic-content">
-                    <Typography variant="body2" sx={{ p: 2, color: 'var(--text-secondary)' }}>
-                      {topic.description}
-                    </Typography>
-
-                    <div className="subtopic-list">
-                      {topic.subtopics?.map((subtopic, subIndex) => (
-                        <div key={subIndex} className="subtopic-item">
-                          {subtopic.completed ? (
-                            <CheckCircleIcon 
-                              fontSize="small" 
-                              sx={{ color: 'var(--success-color)' }} 
-                            />
-                          ) : (
-                            <RadioButtonUncheckedIcon 
-                              fontSize="small" 
-                              sx={{ color: 'var(--text-secondary)' }} 
-                            />
-                          )}
-                          <Typography variant="body2" sx={{ 
-                            color: subtopic.completed ? 
-                              'var(--success-color)' : 
-                              'var(--text-primary)'
-                          }}>
-                            {subtopic.title}
-                          </Typography>
-                        </div>
-                      ))}
-                    </div>
-
-                    {topic.resources && topic.resources.length > 0 && (
-                      <div className="resources-section">
-                        <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
-                          Recursos
+              </div>
+  
+              <div className="plan-description">
+                <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
+                  {studyPlan.description}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3, color: 'var(--text-secondary)' }}>
+                  <strong>Objetivo:</strong> {studyPlan.objective}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-secondary)' }}>
+                  Duração Total: {studyPlan.totalDuration}
+                </Typography>
+              </div>
+  
+              {studyPlan.topics?.map((topic, index) => (
+                <div key={topic.id} className="topic-item">
+                  <div 
+                    className="topic-header"
+                    onClick={() => setExpandedSection(
+                      expandedSection === `topic-${index}` ? '' : `topic-${index}`
+                    )}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                      {topic.progress === 100 ? (
+                        <CheckCircleIcon sx={{ color: 'var(--success-color)' }} />
+                      ) : (
+                        <RadioButtonUncheckedIcon sx={{ color: 'var(--text-secondary)' }} />
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1">
+                          {topic.title}
                         </Typography>
-                        {topic.resources.map((resource, resIndex) => (
+                        <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>
+                          {topic.duration} - {topic.progress}% concluído
+                        </Typography>
+                      </Box>
+                      <Tooltip title={topic.progress === 100 ? "Marcar como não concluído" : "Marcar como concluído"}>
+                        <IconButton 
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTopicProgress(index, topic.progress === 100 ? 0 : 100);
+                          }}
+                          disabled={updatingProgress}
+                          sx={{ 
+                            color: topic.progress === 100 ? 'var(--success-color)' : 'var(--text-secondary)',
+                            '&:hover': {
+                              color: 'var(--success-color)'
+                            }
+                          }}
+                        >
+                          {updatingProgress ? (
+                            <CircularProgress size={20} />
+                          ) : (
+                            <PlayArrowIcon />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                      <ExpandMoreIcon 
+                        sx={{ 
+                          transform: expandedSection === `topic-${index}` ? 'rotate(180deg)' : 'none',
+                          transition: 'transform 0.3s ease'
+                        }} 
+                      />
+                    </Box>
+                  </div>
+  
+                  <Collapse in={expandedSection === `topic-${index}`}>
+                    <div className="topic-content">
+                      <Typography variant="body2" sx={{ p: 2, color: 'var(--text-secondary)' }}>
+                        {topic.description}
+                      </Typography>
+  
+                      <div className="subtopic-list">
+                        {topic.subtopics?.map((subtopic, subIndex) => (
+                          <div key={subIndex} className="subtopic-item">
+                            {subtopic.completed ? (
+                              <CheckCircleIcon 
+                                fontSize="small" 
+                                sx={{ color: 'var(--success-color)' }} 
+                              />
+                            ) : (
+                              <RadioButtonUncheckedIcon 
+                                fontSize="small" 
+                                sx={{ color: 'var(--text-secondary)' }} 
+                              />
+                            )}
+                            <Typography variant="body2" sx={{ 
+                              color: subtopic.completed ? 
+                                'var(--success-color)' : 
+                                'var(--text-primary)'
+                            }}>
+                              {subtopic.title}
+                            </Typography>
+                          </div>
+                        ))}
+                      </div>
+  
+                      {topic.resources && topic.resources.length > 0 && (
+                        <div className="resources-section">
+                          <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
+                            Recursos
+                          </Typography>
+                          {topic.resources.map((resource, resIndex) => (
+                            <Typography 
+                              key={resIndex} 
+                              variant="body2" 
+                              sx={{ pl: 3, color: 'var(--text-secondary)' }}
+                            >
+                              • {resource.tipo}: {resource.descricao}
+                            </Typography>
+                          ))}
+                        </div>
+                      )}
+  
+                      {topic.activity && (
+                        <div className="activity-section">
+                          <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
+                            Atividade
+                          </Typography>
                           <Typography 
-                            key={resIndex} 
                             variant="body2" 
                             sx={{ pl: 3, color: 'var(--text-secondary)' }}
                           >
-                            • {resource.tipo}: {resource.descricao}
+                            {topic.activity.descricao}
                           </Typography>
-                        ))}
-                      </div>
-                    )}
-
-                    {topic.activity && (
-                      <div className="activity-section">
-                        <Typography variant="subtitle2" sx={{ p: 2, pb: 1 }}>
-                          Atividade
-                        </Typography>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ pl: 3, color: 'var(--text-secondary)' }}
-                        >
-                          {topic.activity.descricao}
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ pl: 3, display: 'block', mt: 1, color: 'var(--text-secondary)' }}
-                        >
-                          Tipo: {topic.activity.tipo}
-                        </Typography>
-                      </div>
-                    )}
-                  </div>
-                </Collapse>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <Box sx={{ p: 2, textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <Typography>Nenhum plano de estudos encontrado</Typography>
-          </Box>
-        )}
-      </Paper>
-    </>
-  );
+                          <Typography 
+                            variant="caption" 
+                            sx={{ pl: 3, display: 'block', mt: 1, color: 'var(--text-secondary)' }}
+                          >
+                            Tipo: {topic.activity.tipo}
+                          </Typography>
+                        </div>
+                      )}
+                    </div>
+                  </Collapse>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Box sx={{ p: 2, textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <Typography>Nenhum plano de estudos encontrado</Typography>
+            </Box>
+          )}
+        </Paper>
+      </>
+    );
+  };
 
   return (
     <div className="chat-page-container">
