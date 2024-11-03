@@ -138,6 +138,16 @@
   flex-shrink: 0;
 }
 
+.chat-message a {
+  color: #a2dd00; /* Define a cor do link */
+  text-decoration: underline; /* Adiciona sublinhado para diferenciar links */
+  transition: color var(--transition-quick);
+}
+
+.chat-message a:hover {
+  color: #FF8C00; /* Cor quando o link é hover */
+}
+
 .chat-input-wrapper {
   display: flex;
   gap: 12px;
