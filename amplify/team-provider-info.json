@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-edenfront-dev-f05bc-authRole",
+      "UnauthRoleArn": "arn:aws:iam::654654210348:role/amplify-edenfront-dev-f05bc-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::654654210348:role/amplify-edenfront-dev-f05bc-authRole",
+      "Region": "sa-east-1",
+      "DeploymentBucketName": "amplify-edenfront-dev-f05bc-deployment",
+      "UnauthRoleName": "amplify-edenfront-dev-f05bc-unauthRole",
+      "StackName": "amplify-edenfront-dev-f05bc",
+      "StackId": "arn:aws:cloudformation:sa-east-1:654654210348:stack/amplify-edenfront-dev-f05bc/b17a9a60-9af2-11ef-9245-0629b5f4fbcd",
+      "AmplifyAppId": "d1dmd1q6mcnbxo"
+    }
+  }
+}
