@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/Frontend-eden/static/css/main.e354db83.css",
+    "main.js": "/Frontend-eden/static/js/main.33360b09.js",
+    "static/js/453.694338a4.chunk.js": "/Frontend-eden/static/js/453.694338a4.chunk.js",
+    "static/media/output_image.png": "/Frontend-eden/static/media/output_image.5e3d14951486c70080e5.png",
+    "index.html": "/Frontend-eden/index.html",
+    "main.e354db83.css.map": "/Frontend-eden/static/css/main.e354db83.css.map",
+    "main.33360b09.js.map": "/Frontend-eden/static/js/main.33360b09.js.map",
+    "453.694338a4.chunk.js.map": "/Frontend-eden/static/js/453.694338a4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e354db83.css",
+    "static/js/main.33360b09.js"
+  ]
+}
