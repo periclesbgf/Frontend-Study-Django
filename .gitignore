@@ -23,6 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 .env
+.env.development
+.env.production
 
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
