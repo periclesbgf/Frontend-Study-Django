@@ -2,7 +2,7 @@
   "name": "eden-front",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://periclesbgf.github.io/",
+  "homepage": "https://periclesbgf.github.io/Frontend-eden/",
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",

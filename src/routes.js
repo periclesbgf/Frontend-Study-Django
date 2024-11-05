@@ -21,7 +21,7 @@ const AppRoutes = () => (
     <StudySessionsProvider>
       <Routes>
         {/* Página inicial */}
-        <Route path="/" element={<Home />} />
+        <Route path="/Frontend-eden" element={<Home />} />
 
         {/* Rotas de registro */}
         <Route path="/register-student" element={<RegisterStudent />} />
